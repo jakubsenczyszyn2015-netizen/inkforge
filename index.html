@@ -6831,7 +6831,7 @@ async function collabStart(opts){
   } catch (err){ CL.bc = null; }
   if (opts.online !== false){
     resetDiag();
-    if (NET.server){
+    if (activeServer()){
       /* a room server sidesteps NAT entirely, so it is tried first and alone */
       try {
         await wsConnect();
@@ -6880,8 +6880,17 @@ async function collabStart(opts){
    Everyone dials out to one small server which forwards messages to the rest of
    the room. No NAT traversal, no STUN, no TURN: anyone who can load the page can
    join. The server relays and forgets — it never holds the artwork. */
+/* The room server this build ships with. A blank setting means "use this one",
+   so nobody has to configure anything; typing an address overrides it, and
+   'none' forces plain browser-to-browser. */
+const DEFAULT_SERVER = 'inkforge-rooms.jakubsenczyszyn2015.workers.dev';
+function activeServer(){
+  const v = (NET.server || '').trim();
+  if (v.toLowerCase() === 'none') return '';
+  return v || DEFAULT_SERVER;
+}
 function serverURL(){
-  let u = (NET.server || '').trim();
+  let u = activeServer();
   if (!u) return '';
   u = u.replace(/^http/, 'ws').replace(/\/+$/, '');
   if (!/^wss?:\/\//.test(u)) u = 'wss://' + u;
@@ -7658,7 +7667,7 @@ function connectionPanel(host){
   const head = el('div', 'slbl');
   head.style.cssText = 'cursor:pointer;user-select:none';
   head.textContent = (CL.netOpen ? '▾ ' : '▸ ') + 'Connection' +
-    (NET.server ? ' — your room server'
+    (activeServer() ? ' — room server'
       : NET.relay === 'off' ? ' — relay off'
       : NET.relay === 'custom' ? ' — your own relay' : ' — free relay');
   head.onclick = () => { CL.netOpen = !CL.netOpen; buildCollabModal(); };
@@ -7673,16 +7682,16 @@ function connectionPanel(host){
     wrap.appendChild(el('div', 'slbl', 'Room server'));
     const sv = el('input', 'mi-input');
     sv.value = NET.server || '';
-    sv.placeholder = 'inkforge-rooms.you.workers.dev';
+    sv.placeholder = DEFAULT_SERVER + '  (built in)';
     sv.oninput = () => { NET.server = sv.value.trim(); saveNet(); };
     sv.onchange = () => buildCollabModal();
     wrap.appendChild(sv);
     const sn = el('div', 'note');
     sn.style.margin = '6px 0 14px';
-    sn.innerHTML = NET.server
-      ? 'Rooms go through your server. Nothing below matters unless it is unreachable.'
-      : 'Empty means browser-to-browser, which needs the relay settings below. See <b>server/README.md</b> ' +
-        'in the project to put one up for free in about five minutes.';
+    sn.innerHTML = activeServer()
+      ? 'Rooms go through <b>' + activeServer() + '</b>, so there is nothing for a firewall to block. ' +
+        'Leave this empty to keep using it; type <b>none</b> to force a direct connection instead.'
+      : 'Forced direct (browser to browser), so the relay settings below decide whether it works.';
     wrap.appendChild(sn);
 
     const row = el('div', 'grid3');

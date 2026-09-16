@@ -46,6 +46,10 @@ curl https://inkforge-rooms.your-name.workers.dev/health
 3. Paste the address into **Room server** (with or without `https://`).
 4. Open a room as usual and share the code.
 
+This build already ships with `inkforge-rooms.jakubsenczyszyn2015.workers.dev` as the
+default, so leaving the box empty uses it. Type `none` to force a direct
+browser-to-browser connection instead.
+
 The setting is saved in your browser. **Everyone in the room must use the same
 server**, so if you host the site yourself, put the address in as the default
 (`NET_DEF.server` in `index.html`) and nobody has to type anything.
