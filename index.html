@@ -6854,21 +6854,111 @@ async function collabStart(opts){
   renderCollab();
   requestRender();
 }
+/* ---- connection settings: STUN/TURN relays and an optional private broker ----
+   Two browsers can only talk directly when both networks allow it. Plenty of home
+   routers, phone networks and school/office wifi do not, and then the only way
+   through is a TURN relay. PeerJS ships STUN alone, so a relay is opt-in here. */
+const OPEN_RELAY = [
+  {urls:'stun:stun.l.google.com:19302'},
+  {urls:'stun:openrelay.metered.ca:80'},
+  {urls:'turn:openrelay.metered.ca:80', username:'openrelayproject', credential:'openrelayproject'},
+  {urls:'turn:openrelay.metered.ca:443', username:'openrelayproject', credential:'openrelayproject'},
+  {urls:'turn:openrelay.metered.ca:443?transport=tcp', username:'openrelayproject', credential:'openrelayproject'}
+];
+const NET_DEF = {relay:'open', turnUrl:'', turnUser:'', turnPass:'', brokerHost:'', brokerPort:'', brokerPath:'/'};
+let NET = Object.assign({}, NET_DEF);
+function loadNet(){
+  try { NET = Object.assign({}, NET_DEF, JSON.parse(localStorage.getItem('inkforge.net') || '{}')); }
+  catch (err){ NET = Object.assign({}, NET_DEF); }
+  return NET;
+}
+function saveNet(){
+  try { localStorage.setItem('inkforge.net', JSON.stringify(NET)); } catch (err){}
+}
+loadNet();
+function iceServers(){
+  if (NET.relay === 'off') return [{urls:'stun:stun.l.google.com:19302'}];
+  if (NET.relay === 'custom'){
+    const list = [{urls:'stun:stun.l.google.com:19302'}];
+    String(NET.turnUrl || '').split(/[\s,]+/).filter(Boolean).forEach(u => {
+      const e = {urls: u};
+      if (NET.turnUser) e.username = NET.turnUser;
+      if (NET.turnPass) e.credential = NET.turnPass;
+      list.push(e);
+    });
+    return list.length > 1 ? list : OPEN_RELAY;
+  }
+  return OPEN_RELAY;
+}
+function peerOptions(){
+  const o = {debug:0, config:{iceServers: iceServers(), sdpSemantics:'unified-plan'}};
+  if (NET.brokerHost){
+    o.host = NET.brokerHost;
+    o.path = NET.brokerPath || '/';
+    o.secure = true;
+    if (NET.brokerPort) o.port = parseInt(NET.brokerPort, 10) || 443;
+  }
+  return o;
+}
+/* --- diagnostics: what actually happened, rather than "it doesn't work" --- */
+function resetDiag(){
+  CL.diag = {broker:'…', peer:'…', ice:'…', route:'…', relay: NET.relay, err:''};
+}
+function diagSet(k, v){
+  if (!CL.diag) resetDiag();
+  CL.diag[k] = v;
+  if ($('mCollab') && $('mCollab').classList.contains('show')) buildCollabModal();
+}
+/* Ask the live connection which candidate pair won. "relay" means TURN carried it;
+   "host"/"srflx" mean the browsers reached each other directly. */
+function watchIce(pc){
+  if (!pc) return;
+  try {
+    pc.addEventListener('iceconnectionstatechange', () => {
+      diagSet('ice', pc.iceConnectionState);
+      if (pc.iceConnectionState === 'failed')
+        diagSet('err', 'Both networks refused a direct link and no relay answered — turn a TURN relay on below.');
+    });
+  } catch (err){}
+  const poll = setInterval(async () => {
+    if (!CL.on || !pc || pc.iceConnectionState === 'closed'){ clearInterval(poll); return; }
+    try {
+      const stats = await pc.getStats();
+      let pair = null, cands = {};
+      stats.forEach(r => {
+        if (r.type === 'local-candidate' || r.type === 'remote-candidate') cands[r.id] = r;
+        if (r.type === 'candidate-pair' && (r.state === 'succeeded' || r.nominated)) pair = r;
+      });
+      if (pair){
+        const lc = cands[pair.localCandidateId], rc = cands[pair.remoteCandidateId];
+        const t = (lc && lc.candidateType) || '?', rt = (rc && rc.candidateType) || '?';
+        diagSet('route', (t === 'relay' || rt === 'relay') ? 'via TURN relay' : 'direct (' + t + '↔' + rt + ')');
+        clearInterval(poll);
+      }
+    } catch (err){ clearInterval(poll); }
+  }, 1200);
+  setTimeout(() => clearInterval(poll), 30000);
+}
 function peerConnect(opts){
   return new Promise((resolve, reject) => {
     if (!window.Peer) return reject(new Error('PeerJS missing'));
     let settled = false;
     const done = fn => { if (!settled){ settled = true; fn(); } };
     const wantId = CL.role === 'host' ? 'inkforge-' + CL.room : undefined;
-    const peer = wantId ? new Peer(wantId, {debug:0}) : new Peer({debug:0});
+    const po = peerOptions();
+    resetDiag();
+    const peer = wantId ? new Peer(wantId, po) : new Peer(po);
     CL.peer = peer;
     peer.on('open', id => {
       CL.myPeerId = id;
       CL.online = true;
+      diagSet('broker', 'connected');
       if (CL.role === 'guest'){
         const conn = peer.connect('inkforge-' + CL.room, {reliable:true, metadata:{name:CL.me.name}});
         CL.hostConn = conn;
         conn.on('open', () => {
+          diagSet('peer', 'found the host');
+          watchIce(conn.peerConnection);
           sendMsg({t:'hello', name:CL.me.name, color:CL.me.color, peerId:id, pass:CL.passHash});
         });
         conn.on('data', d => onWire(d, 'peer'));
@@ -6878,6 +6968,8 @@ function peerConnect(opts){
       done(resolve);
     });
     peer.on('connection', conn => {
+      diagSet('peer', 'a guest arrived');
+      conn.on('open', () => watchIce(conn.peerConnection));
       conn.on('data', d => {
         if (d && d.t === 'hello') CL.conns[d.from] = conn;
         onWire(d, 'peer');
@@ -6908,9 +7000,13 @@ function peerConnect(opts){
         CL.status = 'lost'; renderCollab();
         return;
       }
+      diagSet('err', (err && err.message) || t || 'connection failed');
       if (!settled) done(() => reject(new Error(t || 'connection failed')));
     });
-    setTimeout(() => done(() => reject(new Error('timed out reaching the signalling server'))), 12000);
+    setTimeout(() => {
+      if (!settled) diagSet('broker', 'no answer');
+      done(() => reject(new Error('timed out reaching the signalling server')));
+    }, 12000);
   });
 }
 function collabStop(quiet){
@@ -7411,6 +7507,79 @@ function openCollab(){
   buildCollabModal();
   showModal('mCollab');
 }
+/* Connection panel: relay choice, private broker, and what the last attempt did. */
+function connectionPanel(host){
+  const wrap = el('div');
+  wrap.style.marginTop = '18px';
+  const head = el('div', 'slbl');
+  head.style.cssText = 'cursor:pointer;user-select:none';
+  head.textContent = (CL.netOpen ? '▾ ' : '▸ ') + 'Connection' +
+    (NET.relay === 'off' ? ' — relay off' : NET.relay === 'custom' ? ' — your own relay' : ' — free relay');
+  head.onclick = () => { CL.netOpen = !CL.netOpen; buildCollabModal(); };
+  wrap.appendChild(head);
+  if (CL.netOpen){
+    const note = el('div', 'note');
+    note.innerHTML = 'If a friend can never connect, this is almost always why. Some networks refuse to let two ' +
+      'browsers talk directly, and then everything has to go through a <b>TURN relay</b>.';
+    note.style.margin = '6px 0 10px';
+    wrap.appendChild(note);
+
+    const row = el('div', 'grid3');
+    [['open', 'Free relay'], ['custom', 'My own'], ['off', 'None']].forEach(([id, label]) => {
+      const b = el('button', 'mini-btn' + (NET.relay === id ? ' active' : ''), label);
+      b.onclick = () => { NET.relay = id; saveNet(); buildCollabModal(); };
+      row.appendChild(b);
+    });
+    wrap.appendChild(row);
+
+    if (NET.relay === 'custom'){
+      const f = (label, key, ph, pw) => {
+        wrap.appendChild(el('div', 'slbl', label));
+        const i = el('input', 'mi-input');
+        i.value = NET[key] || ''; i.placeholder = ph || '';
+        if (pw) i.type = 'text';
+        i.oninput = () => { NET[key] = i.value.trim(); saveNet(); };
+        wrap.appendChild(i);
+      };
+      f('TURN address', 'turnUrl', 'turn:your-host:3478');
+      f('Username', 'turnUser', '');
+      f('Password', 'turnPass', '', true);
+      const n2 = el('note' === 'note' ? 'div' : 'div', 'note');
+      n2.style.marginTop = '8px';
+      n2.innerHTML = 'Anything typed here is stored in <b>this browser only</b>. It is readable by anyone using ' +
+        'this computer, so use short-lived credentials if the link is public.';
+      wrap.appendChild(n2);
+    }
+
+    const bh = el('div', 'slbl', 'Private broker (optional)');
+    wrap.appendChild(bh);
+    const bi = el('input', 'mi-input');
+    bi.value = NET.brokerHost || '';
+    bi.placeholder = 'blank = the public PeerJS broker';
+    bi.oninput = () => { NET.brokerHost = bi.value.trim(); saveNet(); };
+    wrap.appendChild(bi);
+    const bn = el('div', 'note');
+    bn.style.marginTop = '8px';
+    bn.textContent = 'Only needed if the public broker is down — it introduces the two browsers and never sees your artwork.';
+    wrap.appendChild(bn);
+  }
+  host.appendChild(wrap);
+}
+function diagPanel(host){
+  const d = CL.diag;
+  if (!d) return;
+  host.appendChild(el('div', 'slbl', 'Diagnosis'));
+  const box = el('div', 'note');
+  box.style.cssText = 'line-height:1.7;font-variant-numeric:tabular-nums';
+  const line = (k, v) => k + ': <b>' + v + '</b><br>';
+  box.innerHTML =
+    line('Broker', d.broker) +
+    line('Other end', d.peer) +
+    line('Link', d.ice) +
+    line('Route', d.route) +
+    (d.err ? '<span style="color:#e06c5a">' + d.err + '</span>' : '');
+  host.appendChild(box);
+}
 function buildCollabModal(){
   const host = $('collabBody');
   if (!host) return;
@@ -7467,6 +7636,7 @@ function buildCollabModal(){
       : '<b>Joining loads the host’s book</b> and replaces whatever you have open here, so save your own work first ' +
         '(File → Save Project) if you need it.';
     host.appendChild(note);
+    connectionPanel(host);
     return;
   }
   /* connected */
@@ -7513,6 +7683,9 @@ function buildCollabModal(){
   cb.onclick = () => toggleChat();
   row.appendChild(vb); row.appendChild(mb); row.appendChild(cb);
   host.appendChild(row);
+
+  diagPanel(host);
+  connectionPanel(host);
 
   const leave = el('button', 'btn-sec', 'Leave the room');
   leave.style.cssText = 'width:100%;margin-top:16px';
