@@ -208,6 +208,10 @@ select:focus,.inp:focus{border-color:var(--yellow)}
 .layer-row.dragging{opacity:.4}
 .layer-row.drop-above{box-shadow:inset 0 2px 0 var(--yellow)}
 .layer-row.drop-below{box-shadow:inset 0 -2px 0 var(--yellow)}
+.layer-row.drop-in{background:rgba(255,216,20,.16);box-shadow:inset 0 0 0 1px var(--yellow)}
+.layer-row.active-layer{background:rgba(255,216,20,.10);box-shadow:inset 3px 0 0 var(--yellow);color:var(--text)}
+.layer-row.obj-row{font-size:10px;opacity:.9}
+.sbar .layer-chip{color:var(--yellow);cursor:pointer;border-bottom:1px dotted rgba(255,216,20,.4)}
 
 /* assets */
 .asset-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:10px 12px}
@@ -219,6 +223,45 @@ select:focus,.inp:focus{border-color:var(--yellow)}
 .asset .x{position:absolute;top:1px;right:1px;background:rgba(0,0,0,.72);border:none;color:#fff;font-size:10px;cursor:pointer;
   border-radius:3px;padding:0 4px;display:none}
 .asset:hover .x{display:block}
+
+/* ---------- collaboration ---------- */
+.collab-btn{display:flex;align-items:center;gap:7px;font-size:10px;letter-spacing:.6px}
+.collab-btn .dot{width:7px;height:7px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:.2s}
+.collab-btn.live{border-color:var(--green);color:var(--text)}
+.collab-btn.live .dot{background:var(--green);box-shadow:0 0 0 3px rgba(40,208,123,.18)}
+.collab-btn.connecting .dot{background:var(--yellow);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.presence{position:absolute;top:14px;right:14px;display:flex;gap:6px;z-index:30;flex-wrap:wrap;justify-content:flex-end;max-width:60%}
+.pchip{display:flex;align-items:center;gap:6px;background:rgba(20,20,27,.92);border:1px solid var(--b1);border-radius:20px;
+  padding:3px 10px 3px 4px;font-size:10px;color:var(--text2);backdrop-filter:blur(8px)}
+.pchip i{width:16px;height:16px;border-radius:50%;display:block;font-style:normal;color:#0e0e13;font-size:9px;
+  line-height:16px;text-align:center;font-weight:700;flex-shrink:0}
+.pchip.talking{border-color:var(--green);box-shadow:0 0 0 2px rgba(40,208,123,.2)}
+.pchip .pg{opacity:.55;font-size:9px}
+#chatDock{position:fixed;right:16px;bottom:120px;width:300px;max-width:88vw;background:var(--s1);border:1px solid var(--b2);
+  border-radius:12px;box-shadow:var(--shadow);z-index:800;display:flex;flex-direction:column;overflow:hidden}
+.chat-head{display:flex;align-items:center;gap:6px;padding:9px 12px;background:var(--s0);border-bottom:1px solid var(--b1);
+  font-size:10.5px;color:var(--text2)}
+.chat-head b{color:var(--yellow);font-weight:400}
+.chat-head button{background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;padding:2px 5px;border-radius:5px}
+.chat-head button:hover{background:var(--s3);color:var(--text)}
+.chat-head button.on{color:var(--green)}
+.chat-log{flex:1;min-height:150px;max-height:40vh;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:7px}
+.chat-msg{font-size:11px;line-height:1.5;color:var(--text)}
+.chat-msg b{font-weight:500;font-size:10px}
+.chat-msg.sys{color:var(--text3);font-size:10px;font-style:italic}
+.chat-input{display:flex;gap:6px;padding:8px;border-top:1px solid var(--b1)}
+.chat-input input{flex:1;background:var(--s3);border:1px solid var(--b2);border-radius:6px;padding:7px 9px;font-size:11px;outline:none}
+.chat-input input:focus{border-color:var(--yellow)}
+.chat-input button{background:var(--yellow);color:#000;border:none;border-radius:6px;padding:0 12px;cursor:pointer;font-size:13px}
+.peer-row{display:flex;align-items:center;gap:9px;padding:7px 10px;border:1px solid var(--b1);border-radius:8px;
+  font-size:11px;color:var(--text2);background:var(--s2)}
+.peer-row i{width:20px;height:20px;border-radius:50%;font-style:normal;color:#0e0e13;font-size:10px;line-height:20px;
+  text-align:center;font-weight:700;flex-shrink:0}
+.peer-row .tag{margin-left:auto;font-size:9px;color:var(--text3)}
+.room-code{font-family:var(--mono);font-size:19px;letter-spacing:2px;color:var(--yellow);background:var(--s3);
+  border:1px dashed var(--b3);border-radius:8px;padding:12px;text-align:center;cursor:pointer;word-break:break-all}
+.room-code:hover{border-color:var(--yellow)}
 
 /* ---------- status bar ---------- */
 .sbar{height:24px;background:var(--s0);border-top:1px solid var(--b1);display:flex;align-items:center;padding:0 12px;gap:16px;
@@ -420,6 +463,8 @@ kbd{background:var(--s3);border:1px solid var(--b2);border-bottom-width:2px;bord
       <div class="dd-sep"></div>
       <div class="dd-item" data-act="pageSetup">⚙ Page Setup &amp; Size…</div>
       <div class="dd-item" data-act="numberPages">＃ Number All Pages</div>
+      <div class="dd-sep"></div>
+      <div class="dd-item" data-act="printKit">🏭 Print Shop Kit — title page &amp; cover…</div>
     </div>
   </div>
   <div class="dd-wrap">
@@ -450,6 +495,9 @@ kbd{background:var(--s3);border:1px solid var(--b2);border-bottom-width:2px;bord
     </div>
   </div>
   <div class="hdr-r">
+    <button class="btn-ghost collab-btn" id="collabBtn" data-act="collab" title="Draw together (C)">
+      <span class="dot" id="collabDot"></span><span id="collabLabel">COLLAB</span>
+    </button>
     <button class="btn-ghost" data-act="undo" title="Undo (Ctrl+Z)">↩</button>
     <button class="btn-ghost" data-act="redo" title="Redo (Ctrl+Shift+Z)">↪</button>
     <input class="proj-name" id="projNameInput" value="Untitled" spellcheck="false" title="Project name">
@@ -473,6 +521,7 @@ kbd{background:var(--s3);border:1px solid var(--b2);border-bottom-width:2px;bord
         <button data-act="zoomIn">+</button><button data-act="fit" style="font-size:10px">FIT</button>
       </div>
       <div class="hud hud-info"><span id="coordDisp">0, 0</span></div>
+      <div class="presence" id="presence"></div>
     </div>
     <div class="film" id="film">
       <div class="film-head">
@@ -499,6 +548,7 @@ kbd{background:var(--s3);border:1px solid var(--b2);border-bottom-width:2px;bord
   <span id="statPage">Page 1/1</span>
   <span id="statSize">825 × 1275</span>
   <span id="statObjs">0 objects</span>
+  <span>on <b class="layer-chip" id="statLayer">Layer 1</b></span>
   <span id="statSel"></span>
   <span class="sbar-msg" id="sbarMsg">Ready</span>
 </div>
@@ -513,6 +563,20 @@ kbd{background:var(--s3);border:1px solid var(--b2);border-bottom-width:2px;bord
   </div>
 </div>
 <div id="ctxMenu"></div>
+<div id="chatDock" class="hide">
+  <div class="chat-head">
+    <span>💬 Chat <b id="chatRoom"></b></span>
+    <span style="margin-left:auto;display:flex;gap:6px">
+      <button id="chatMicBtn" title="Voice chat">🎤</button>
+      <button id="chatMinBtn" title="Hide chat">—</button>
+    </span>
+  </div>
+  <div class="chat-log" id="chatLog"></div>
+  <div class="chat-input">
+    <input id="chatText" placeholder="Message the room…" maxlength="500" autocomplete="off">
+    <button id="chatSend">➤</button>
+  </div>
+</div>
 <div class="toast-wrap" id="toastWrap"></div>
 <div id="printArea"></div>
 
@@ -628,6 +692,7 @@ kbd{background:var(--s3);border:1px solid var(--b2);border-bottom-width:2px;bord
   <button class="exp-btn" data-act="doPNG"><span class="big">🖼️</span><span><span class="t">PNG / JPG PAGES</span><span class="d">One file per page at the chosen DPI.</span></span></button>
   <button class="exp-btn" data-act="doZIP"><span class="big">🗜️</span><span><span class="t">ZIP OF ALL PAGES</span><span class="d">Every page in one archive — ideal for CBZ readers and print shops.</span></span></button>
   <button class="exp-btn" data-act="doStrip"><span class="big">📱</span><span><span class="t">WEBTOON STRIP</span><span class="d">All pages stitched into one tall vertical-scroll image.</span></span></button>
+  <button class="exp-btn" data-act="printKit"><span class="big">🏭</span><span><span class="t">PRINT SHOP KIT</span><span class="d">Title page and a spine-accurate cover wrap for KDP, IngramSpark, Lulu or Mixam.</span></span></button>
   <button class="exp-btn" data-act="doSave"><span class="big">💾</span><span><span class="t">SAVE .INKFORGE PROJECT</span><span class="d">Fully editable project file — reopen later with every object intact.</span></span></button>
   <button class="exp-btn" data-act="print"><span class="big">🖨️</span><span><span class="t">PRINT</span><span class="d">Send straight to a printer or "Save as PDF" from the print dialog.</span></span></button>
   <div class="modal-footer"><button class="btn-sec" data-act="closeModal">Close</button></div>
@@ -711,6 +776,29 @@ kbd{background:var(--s3);border:1px solid var(--b2);border-bottom-width:2px;bord
  </div>
 </div>
 
+<div id="mCollab" class="mo">
+ <div class="modal">
+  <div class="modal-title">DRAW TOGETHER</div>
+  <div class="modal-sub">Open a room, share the code, and everyone works on the same book — with live cursors, chat and voice.</div>
+  <div id="collabBody"></div>
+  <div class="modal-footer"><button class="btn-sec" data-act="closeModal">Close</button></div>
+ </div>
+</div>
+
+<div id="mPrint" class="mo">
+ <div class="modal wide">
+  <div class="modal-title">PRINT SHOP KIT</div>
+  <div class="modal-sub">Title pages and full cover wraps, sized the way the companies that print your book want them.</div>
+  <div class="tab-bar" id="printTabs">
+    <div class="active" data-ptab="title">Title page</div>
+    <div data-ptab="cover">Cover wrap</div>
+    <div data-ptab="sizes">Trim sizes</div>
+  </div>
+  <div id="printBody" style="max-height:58vh;overflow-y:auto"></div>
+  <div class="modal-footer"><button class="btn-sec" data-act="closeModal">Close</button></div>
+ </div>
+</div>
+
 <div id="mKeys" class="mo">
  <div class="modal wide">
   <div class="modal-title">KEYBOARD SHORTCUTS</div>
@@ -726,6 +814,8 @@ kbd{background:var(--s3);border:1px solid var(--b2);border-bottom-width:2px;bord
   <div class="modal-sub" id="helpSub">From blank page to printed comic in six moves.</div>
   <div class="tab-bar" id="helpTabs">
     <div class="active" data-htab="start">Quick start</div>
+    <div data-htab="together">Drawing together</div>
+    <div data-htab="layers">Layers</div>
     <div data-htab="bubbles">Speech bubbles</div>
     <div data-htab="print">Printing</div>
     <div data-htab="new">What's new</div>
@@ -1000,6 +1090,9 @@ const LIBS = {
       const base = this.loadedUrl || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
       window.pdfjsLib.GlobalWorkerOptions.workerSrc = base.replace('pdf.min.js', 'pdf.worker.min.js');
     }},
+  peerjs: {check:() => window.Peer, urls:[
+    'https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js',
+    'https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js']},
   jszip: {check:() => window.JSZip, urls:[
     'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
     'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js']},
@@ -1036,14 +1129,117 @@ function newProject(o){
     created: Date.now(),
   };
 }
+function newLayer(name){
+  return {id: uid('L'), type:'layer', name: name || 'Layer 1', visible:true, locked:false, opacity:1, objects:[]};
+}
+function newFolder(name){
+  return {id: uid('F'), type:'folder', name: name || 'Folder', visible:true, locked:false, open:true, children:[]};
+}
 function newPage(name){
-  return {id: uid('p'), name: name || '', bg: '#ffffff', objects: []};
+  const L = newLayer('Layer 1');
+  return {id: uid('p'), name: name || '', bg: '#ffffff', layers:[L], active:L.id};
+}
+/* Projects saved by 1.x (and 2.0 before layers) keep a flat object list. */
+function migratePage(pg){
+  if (!pg.layers || !pg.layers.length){
+    const L = newLayer('Layer 1');
+    L.objects = pg.objects || [];
+    L.objects.forEach(o => { o.layer = L.id; });
+    pg.layers = [L];
+  }
+  delete pg.objects;
+  if (!pg.active || !layerById(pg, pg.active)) pg.active = (flatLayers(pg)[0] || {}).id;
+  return pg;
 }
 const page = () => S.P.pages[S.cur];
-const objs = () => page().objects;
-const findObj = id => { const l = objs(); for (let i = 0; i < l.length; i++) if (l[i].id === id) return l[i]; return null; };
+
+/* Layer tree helpers. Folders may nest; a layer holds the objects.
+   Effective visibility / lock / opacity cascade down from folders and are
+   cached on the node as _vis / _lock / _alpha during the walk. */
+function flatLayers(pg){
+  const out = [];
+  const walk = (nodes, vis, lock, alpha) => {
+    for (const n of nodes || []){
+      const v = vis && n.visible !== false;
+      const l = lock || !!n.locked;
+      const a = alpha * (n.opacity == null ? 1 : n.opacity);
+      n._vis = v; n._lock = l; n._alpha = a;
+      if (n.type === 'folder') walk(n.children, v, l, a);
+      else { n.objects = n.objects || []; out.push(n); }
+    }
+  };
+  walk(pg.layers, true, false, 1);
+  return out;
+}
+function eachNode(pg, fn){
+  const walk = (nodes, depth, parent) => {
+    for (const n of nodes || []){
+      fn(n, depth, parent);
+      if (n.type === 'folder') walk(n.children, depth + 1, n);
+    }
+  };
+  walk(pg.layers, 0, null);
+}
+function layerById(pg, id){
+  let found = null;
+  eachNode(pg, n => { if (n.id === id) found = n; });
+  return found;
+}
+function nodeParentArr(pg, id){
+  let res = null;
+  const walk = arr => {
+    for (let i = 0; i < arr.length; i++){
+      if (arr[i].id === id){ res = {arr, i}; return true; }
+      if (arr[i].type === 'folder' && walk(arr[i].children || [])) return true;
+    }
+    return false;
+  };
+  walk(pg.layers);
+  return res;
+}
+function pageObjects(pg){
+  const out = [];
+  for (const L of flatLayers(pg)) for (const o of L.objects){ o._lyr = L; out.push(o); }
+  return out;
+}
+function pageObjCount(pg){
+  return flatLayers(pg).reduce((a, L) => a + L.objects.length, 0);
+}
+function activeLayer(pg){
+  pg = pg || page();
+  const list = flatLayers(pg);
+  if (!list.length){ pg.layers.push(newLayer('Layer 1')); return flatLayers(pg)[0]; }
+  const found = list.find(L => L.id === pg.active);
+  if (found) return found;
+  pg.active = list[list.length-1].id;
+  return list[list.length-1];
+}
+function addToPage(pg, o, layer){
+  const L = layer || activeLayer(pg);
+  o.layer = L.id;
+  L.objects.push(o);
+  return o;
+}
+function removeObjsWhere(pg, pred){
+  for (const L of flatLayers(pg)) L.objects = L.objects.filter(o => !pred(o));
+}
+function reidPage(pg){
+  const map = {};
+  eachNode(pg, n => { const id = uid(n.type === 'folder' ? 'F' : 'L'); map[n.id] = id; n.id = id; });
+  pg.active = map[pg.active] || pg.active;
+  for (const L of flatLayers(pg)) L.objects.forEach(o => { o.id = uid(o.type[0]); o.layer = L.id; });
+  pg.id = uid('p');
+  return pg;
+}
+const objs = () => pageObjects(page());
+const findObj = id => {
+  const pg = page();
+  for (const L of flatLayers(pg)) for (const o of L.objects) if (o.id === id){ o._lyr = L; return o; }
+  return null;
+};
 const selObjs = () => S.sel.map(findObj).filter(Boolean);
 const firstSel = () => (S.sel.length ? findObj(S.sel[0]) : null);
+const objUsable = o => !o.hidden && !o.locked && !(o._lyr && (!o._lyr._vis || o._lyr._lock));
 
 const OBJ_DEFAULTS = {
   rot: 0, opacity: 1, locked: false, hidden: false,
@@ -1488,6 +1684,17 @@ function scratch(key, w, h){
   return s;
 }
 const imgCache = {};
+let _gifStage = null;
+function gifStage(){
+  if (!_gifStage){
+    _gifStage = document.createElement('div');
+    _gifStage.id = 'gifStage';
+    _gifStage.style.cssText = 'position:fixed;left:0;top:0;width:2px;height:2px;overflow:hidden;opacity:.01;' +
+      'pointer-events:none;z-index:-1';
+    document.body.appendChild(_gifStage);
+  }
+  return _gifStage;
+}
 function assetImage(id){
   const a = S.P.assets[id];
   if (!a) return null;
@@ -1497,6 +1704,11 @@ function assetImage(id){
     im.onload = () => { a.w = im.naturalWidth; a.h = im.naturalHeight; requestRender(); updateThumb(S.cur); };
     im.src = a.src;
     imgCache[id] = im;
+    if (a.gif){
+      /* an animated GIF only advances while it is being rendered somewhere */
+      im.style.cssText = 'width:2px;height:2px;display:block';
+      gifStage().appendChild(im);
+    }
   }
   return (im.complete && im.naturalWidth) ? im : null;
 }
@@ -1525,7 +1737,12 @@ function renderPage(c, pg, env){
   /* paper */
   c.fillStyle = pg.bg || '#ffffff';
   c.fillRect(-bleed, -bleed, W + bleed*2, H + bleed*2);
-  const list = pg.objects.filter(o => !o.hidden);
+  const list = [];
+  for (const L of flatLayers(pg)){
+    if (!L._vis) continue;
+    if (L.noExport && env.forExport) continue;
+    for (const o of L.objects){ o._lyr = L; if (!o.hidden) list.push(o); }
+  }
   const needsErase = list.some(o => o.type === 'stroke' && o.tool === 'eraser' && o.eraseMode !== 'white');
   if (!needsErase){
     for (const o of list) drawObject(c, o, env);
@@ -1547,7 +1764,8 @@ function drawObject(c, o, env){
   env = env || {};
   if (o.hidden) return;
   c.save();
-  c.globalAlpha = o.opacity == null ? 1 : o.opacity;
+  const layerAlpha = env.alpha != null ? env.alpha : (o._lyr && o._lyr._alpha != null ? o._lyr._alpha : 1);
+  c.globalAlpha = layerAlpha * (o.opacity == null ? 1 : o.opacity);
   if (o.rot){
     const b = objBounds(o), cx = b.x + b.w/2, cy = b.y + b.h/2;
     c.translate(cx, cy); c.rotate(o.rot); c.translate(-cx, -cy);
@@ -1976,7 +2194,9 @@ function drawImageObj(c, o){
   if (parts.length) c.filter = parts.join(' ');
   c.translate(b.x + b.w/2, b.y + b.h/2);
   c.scale(o.flipX ? -1 : 1, o.flipY ? -1 : 1);
-  const src = (f.halftone || f.threshold) ? processedImage(o, im) : im;
+  const frozen = (S.gifFrozen && S.gifFrozen[o.asset]) || (S.gifPaused ? null : gifFrame(o.asset));
+  const base = frozen || im;
+  const src = (f.halftone || f.threshold) ? processedImage(o, base) : base;
   if (src) c.drawImage(src, -b.w/2, -b.h/2, b.w, b.h);
   c.filter = 'none';
   c.restore();
@@ -1984,6 +2204,7 @@ function drawImageObj(c, o){
 const _procCache = {};
 function processedImage(o, im){
   const f = o.filter || {};
+  if (S.P.assets[o.asset] && S.P.assets[o.asset].gif) return gifProcessed(o, im);
   const key = o.asset + '|' + (f.halftone||0) + '|' + (f.threshold||0) + '|' + (f.tlevel||50) + '|' + (f.hdot||6);
   if (_procCache[key]) return _procCache[key];
   const maxDim = 2200;
@@ -2023,6 +2244,35 @@ function processedImage(o, im){
   }
   _procCache[key] = cv;
   return cv;
+}
+/* filtered GIF frames cannot be cached — the frame changes every tick */
+function gifProcessed(o, im){
+  const saved = _procCache;
+  const key = '__gif__';
+  delete saved[key];
+  const tmp = Object.assign({}, o, {asset: key});
+  const out = (function(){
+    const f = o.filter || {};
+    const w = im.width || im.naturalWidth, h = im.height || im.naturalHeight;
+    const cv = document.createElement('canvas');
+    cv.width = Math.max(1, Math.min(1400, w)); cv.height = Math.max(1, Math.round(cv.width * h / Math.max(1, w)));
+    const cx = cv.getContext('2d', {willReadFrequently:true});
+    cx.drawImage(im, 0, 0, cv.width, cv.height);
+    const id = cx.getImageData(0, 0, cv.width, cv.height), d = id.data;
+    if (f.threshold){
+      const lv = (f.tlevel == null ? 50 : f.tlevel) * 2.55;
+      for (let i = 0; i < d.length; i += 4){
+        const v = d[i]*0.299 + d[i+1]*0.587 + d[i+2]*0.114;
+        const o2 = v < lv ? 0 : 255;
+        d[i] = d[i+1] = d[i+2] = o2;
+        if (f.transparentWhite && o2 === 255) d[i+3] = 0;
+      }
+      cx.putImageData(id, 0, 0);
+    }
+    return cv;
+  })();
+  void tmp;
+  return out;
 }
 
 /* ------------------------------------------------------------- fill object */
@@ -2247,9 +2497,20 @@ function resizeCanvases(){
 function applyView(){
   wrapEl.style.transform = 'translate(' + Math.round(S.view.px) + 'px,' + Math.round(S.view.py) + 'px)';
 }
+const MIN_ZOOM = 0.04, MAX_ZOOM = 8;
+let _zoomWarn = 0;
 function setZoom(z, anchor){
   const old = S.view.zoom;
-  z = clamp(z, 0.05, 16);
+  const wanted = z;
+  z = clamp(z, MIN_ZOOM, MAX_ZOOM);
+  if (wanted > MAX_ZOOM + 1e-6 && old >= MAX_ZOOM - 1e-6){
+    if (Date.now() - _zoomWarn > 1400){ _zoomWarn = Date.now(); status('Maximum zoom — ' + Math.round(MAX_ZOOM * 100) + '%'); }
+    return;
+  }
+  if (wanted < MIN_ZOOM - 1e-6 && old <= MIN_ZOOM + 1e-6){
+    if (Date.now() - _zoomWarn > 1400){ _zoomWarn = Date.now(); status('Minimum zoom'); }
+    return;
+  }
   if (Math.abs(z - old) < 1e-6) return;
   const r = stageEl.getBoundingClientRect();
   const ax = anchor ? anchor.x - r.left : r.width / 2;
@@ -2266,7 +2527,7 @@ function fitView(pad){
   const r = stageEl.getBoundingClientRect();
   pad = pad == null ? 52 : pad;
   const z = Math.min((r.width - pad) / S.P.w, (r.height - pad) / S.P.h);
-  S.view.zoom = clamp(z, 0.05, 8);
+  S.view.zoom = clamp(z, MIN_ZOOM, MAX_ZOOM);
   S.view.px = (r.width - S.P.w * S.view.zoom) / 2;
   S.view.py = (r.height - S.P.h * S.view.zoom) / 2;
   resizeCanvases(); requestRender(); updateZoomUI();
@@ -2274,7 +2535,7 @@ function fitView(pad){
 function zoomToRect(b, padFactor){
   const r = stageEl.getBoundingClientRect();
   const pf = padFactor || 1.35;
-  const z = clamp(Math.min(r.width / (b.w * pf), r.height / (b.h * pf)), 0.05, 12);
+  const z = clamp(Math.min(r.width / (b.w * pf), r.height / (b.h * pf)), MIN_ZOOM, MAX_ZOOM);
   S.view.zoom = z;
   S.view.px = r.width/2 - (b.x + b.w/2) * z;
   S.view.py = r.height/2 - (b.y + b.h/2) * z;
@@ -2344,7 +2605,7 @@ function localPt(o, x, y){
   return rotPt(x, y, b.x + b.w/2, b.y + b.h/2, -o.rot);
 }
 function hitObject(o, x, y, tol){
-  if (o.hidden || o.locked) return false;
+  if (!objUsable(o)) return false;
   const [px, py] = localPt(o, x, y);
   tol = tol || 3;
   switch (o.type){
@@ -2414,7 +2675,7 @@ function hitTest(x, y, skipTypes){
 }
 function objsInRect(r){
   return objs().filter(o => {
-    if (o.hidden || o.locked) return false;
+    if (!objUsable(o)) return false;
     const c = objCorners(o);
     let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
     for (const p of c){ x0=Math.min(x0,p[0]); y0=Math.min(y0,p[1]); x1=Math.max(x1,p[0]); y1=Math.max(y1,p[1]); }
@@ -2625,6 +2886,7 @@ function drawUI(){
       c.restore();
     }
   }
+  drawPeerCursors(c, px);
   /* snap guides */
   if (liveGuides.length){
     c.save(); c.strokeStyle = '#F2264B'; c.lineWidth = px(1); c.setLineDash([px(6), px(5)]);
@@ -2725,6 +2987,7 @@ function pushHist(label){
   h.idx = h.stack.length - 1;
   h.label = label;
   scheduleAutosave();
+  syncPush();
   refreshSidebars();
 }
 function restoreHist(){
@@ -2733,6 +2996,7 @@ function restoreHist(){
   S.cur = clamp(st.cur, 0, S.P.pages.length - 1);
   S.sel = S.sel.filter(id => findObj(id));
   S.editing = null; hideTextEditor();
+  updateGifLoop(); syncPush();
   requestRender(); refreshSidebars(); updateStatus(); buildFilmstrip();
 }
 function undo(){
@@ -2750,7 +3014,7 @@ function redo(){
 function addObject(o, opt){
   opt = opt || {};
   normalizeObj(o);
-  objs().push(o);
+  addToPage(page(), o, opt.layer);
   if (opt.select !== false) S.sel = [o.id];
   if (opt.hist !== false) pushHist(opt.label || ('Add ' + o.type));
   requestRender();
@@ -2759,7 +3023,7 @@ function addObject(o, opt){
 function deleteSel(){
   if (!S.sel.length) return;
   const set = new Set(S.sel);
-  page().objects = objs().filter(o => !set.has(o.id));
+  removeObjsWhere(page(), o => set.has(o.id));
   S.sel = [];
   pushHist('Delete');
   requestRender(); refreshInspector();
@@ -2772,9 +3036,9 @@ function duplicateSel(offset){
     const c = JSON.parse(JSON.stringify(o, jsonRep));
     c.id = uid(c.type[0]);
     moveObj(c, d, d);
+    addToPage(page(), c, o._lyr);
     return c;
   });
-  copies.forEach(c => objs().push(c));
   S.sel = copies.map(c => c.id);
   pushHist('Duplicate');
   requestRender(); refreshInspector();
@@ -2797,29 +3061,38 @@ function pasteClip(at){
     copies.forEach(c => { const b = objBounds(c); x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y); });
     copies.forEach(c => moveObj(c, at.x - x0, at.y - y0));
   } else copies.forEach(c => moveObj(c, 22, 22));
-  copies.forEach(c => objs().push(c));
+  copies.forEach(c => addToPage(page(), c));
   S.sel = copies.map(c => c.id);
   pushHist('Paste');
   requestRender(); refreshInspector();
 }
+/* z-order moves objects within their own layer — layers themselves are the
+   coarse stacking order. */
 function zOrder(mode){
-  const list = objs(), set = new Set(S.sel);
-  const picked = list.filter(o => set.has(o.id)), rest = list.filter(o => !set.has(o.id));
-  if (!picked.length) return;
-  if (mode === 'front') page().objects = rest.concat(picked);
-  else if (mode === 'back') page().objects = picked.concat(rest);
-  else {
-    const dir = mode === 'up' ? 1 : -1;
-    const arr = list.slice();
-    const idxs = arr.map((o, i) => set.has(o.id) ? i : -1).filter(i => i >= 0);
-    if (dir > 0) idxs.reverse();
-    for (const i of idxs){
-      const j = i + dir;
-      if (j < 0 || j >= arr.length || set.has(arr[j].id)) continue;
-      const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+  const set = new Set(S.sel);
+  if (!set.size) return;
+  let touched = false;
+  for (const L of flatLayers(page())){
+    const picked = L.objects.filter(o => set.has(o.id));
+    if (!picked.length) continue;
+    touched = true;
+    const rest = L.objects.filter(o => !set.has(o.id));
+    if (mode === 'front') L.objects = rest.concat(picked);
+    else if (mode === 'back') L.objects = picked.concat(rest);
+    else {
+      const dir = mode === 'up' ? 1 : -1;
+      const arr = L.objects.slice();
+      const idxs = arr.map((o, i) => set.has(o.id) ? i : -1).filter(i => i >= 0);
+      if (dir > 0) idxs.reverse();
+      for (const i of idxs){
+        const j = i + dir;
+        if (j < 0 || j >= arr.length || set.has(arr[j].id)) continue;
+        const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+      }
+      L.objects = arr;
     }
-    page().objects = arr;
   }
+  if (!touched) return;
   pushHist('Reorder');
   requestRender(); refreshSidebars();
 }
@@ -2917,6 +3190,7 @@ function onMove(e){
   const p = evPage(e);
   const cd = $('coordDisp');
   if (cd) cd.textContent = Math.round(p.x) + ', ' + Math.round(p.y);
+  collabCursor(p);
   const d = S.drag;
   if (!d){
     if (S.tool === 'select'){
@@ -2950,10 +3224,11 @@ function onMove(e){
       const ddx = snapped.dx - d.lastDx, ddy = snapped.dy - d.lastDy;
       for (const o of selObjs()) moveObj(o, ddx, ddy);
       d.lastDx = snapped.dx; d.lastDy = snapped.dy;
+      syncLive();
       requestRender();
       break;
     }
-    case 'resize': doResize(d, p, e); break;
+    case 'resize': doResize(d, p, e); syncLive(); break;
     case 'rotate': {
       const f = d.frame0, cx = f.x + f.w/2, cy = f.y + f.h/2;
       let a = Math.atan2(p.y - cy, p.x - cx) - d.a0;
@@ -2966,7 +3241,7 @@ function onMove(e){
     }
     case 'tail': {
       const o = findObj(d.id);
-      if (o && o.tails[d.i]){ o.tails[d.i].x = p.x; o.tails[d.i].y = p.y; invalidate(o); requestRender(); }
+      if (o && o.tails[d.i]){ o.tails[d.i].x = p.x; o.tails[d.i].y = p.y; invalidate(o); syncLive(); requestRender(); }
       break;
     }
     case 'marquee': {
@@ -3481,7 +3756,7 @@ function commitTextEdit(){
     const had = o.text;
     o.text = o.type === 'sfx' ? val.toUpperCase() : val;
     if (!o.text && !had && o.type !== 'sfx'){
-      page().objects = objs().filter(x => x.id !== o.id);
+      removeObjsWhere(page(), x => x.id === o.id);
       S.sel = [];
       pushHist('Edit text');
     } else if (o.text !== had) pushHist('Edit text');
@@ -3492,7 +3767,7 @@ function cancelTextEdit(){
   const o = S.editing ? findObj(S.editing.id) : null;
   S.editing = null; hideTextEditor();
   if (o && !o.text && o.type !== 'sfx'){
-    page().objects = objs().filter(x => x.id !== o.id);
+    removeObjsWhere(page(), x => x.id === o.id);
     S.sel = [];
   }
   requestRender();
@@ -3514,9 +3789,8 @@ function addPage(at, pg){
 }
 function duplicatePage(idx){
   idx = idx == null ? S.cur : idx;
-  const copy = JSON.parse(JSON.stringify(S.P.pages[idx], jsonRep));
-  copy.id = uid('p');
-  copy.objects.forEach(o => { o.id = uid(o.type[0]); });
+  const copy = migratePage(JSON.parse(JSON.stringify(S.P.pages[idx], jsonRep)));
+  reidPage(copy);
   S.P.pages.splice(idx + 1, 0, copy);
   S.cur = idx + 1; S.sel = [];
   pushHist('Duplicate page');
@@ -3525,7 +3799,7 @@ function duplicatePage(idx){
 function deletePage(idx){
   idx = idx == null ? S.cur : idx;
   if (S.P.pages.length <= 1){ toast('A project needs at least one page'); return; }
-  const hasArt = S.P.pages[idx].objects.length > 0;
+  const hasArt = pageObjCount(S.P.pages[idx]) > 0;
   if (hasArt && !confirm('Delete page ' + (idx+1) + '? This can be undone with Ctrl+Z.')) return;
   S.P.pages.splice(idx, 1);
   S.cur = clamp(S.cur > idx ? S.cur - 1 : S.cur, 0, S.P.pages.length - 1);
@@ -3537,6 +3811,9 @@ function gotoPage(i){
   if (i < 0 || i >= S.P.pages.length || i === S.cur) return;
   if (S.editing) commitTextEdit();
   S.cur = i; S.sel = [];
+  if (CL.on && CL.status === 'live') sendMsg({t:'page', page:S.cur});
+  renderCollab();
+  updateGifLoop();
   requestRender(); buildFilmstrip(); updateStatus(); refreshSidebars();
 }
 function movePage(from, to){
@@ -3550,22 +3827,22 @@ function movePage(from, to){
 function clearPage(){
   if (!objs().length) return;
   if (!confirm('Clear everything on this page?')) return;
-  page().objects = [];
+  flatLayers(page()).forEach(L => L.objects = []);
   S.sel = [];
   pushHist('Clear page');
   requestRender(); refreshSidebars();
 }
 function clearAllPages(){
   if (!confirm('Clear ALL pages in this project? Undo still works, but this is a big one.')) return;
-  S.P.pages.forEach(p => p.objects = []);
+  S.P.pages.forEach(p => flatLayers(p).forEach(L => L.objects = []));
   S.sel = [];
   pushHist('Clear all');
   requestRender(); buildFilmstrip(); refreshSidebars();
 }
 function numberAllPages(){
   S.P.pages.forEach((pg, i) => {
-    pg.objects = pg.objects.filter(o => !o.isPageNum);
-    pg.objects.push(mkObj('text', {
+    removeObjsWhere(pg, o => o.isPageNum);
+    addToPage(pg, mkObj('text', {
       isPageNum: true, text: String(i + 1),
       x: S.P.w/2 - 60, y: S.P.h - Math.min(S.P.h*0.055, 54), w: 120, h: 34,
       font: "'IBM Plex Mono',monospace", fontSize: Math.max(12, S.P.w * 0.022),
@@ -3797,7 +4074,7 @@ function generateLayout(opt){
 
   for (const pi of targets){
     const pg = S.P.pages[pi];
-    if (opt.replace !== false) pg.objects = pg.objects.filter(o => o.type !== 'panel' || o.keep);
+    if (opt.replace !== false) removeObjsWhere(pg, o => o.type === 'panel' && !o.keep);
     if (layout.novel){ generateNovelPage(pg, layout.novel, margin); continue; }
     let rects = calcPanels(layout, margin, gutter, S.P.w, S.P.h);
     if (opt.allPages && style === 'random') rects = calcPanels(
@@ -3818,13 +4095,13 @@ function generateLayout(opt){
         if (side === 3){ o.x -= margin + 10; o.w += margin + 10; }
       }
       if (opt.tilt) o.rot = (rnd() - 0.5) * 0.045;
-      pg.objects.push(o);
+      addToPage(pg, o);
     });
     /* dressing */
-    const panels = pg.objects.filter(o => o.type === 'panel').sort(readingOrder);
+    const panels = pageObjects(pg).filter(o => o.type === 'panel').sort(readingOrder);
     if (opt.caption && panels.length){
       const p0 = panels[0];
-      pg.objects.push(mkObj('bubble', {
+      addToPage(pg, mkObj('bubble', {
         btype:'caption', x: p0.x + 14, y: p0.y + 14, w: Math.min(p0.w * 0.62, 340), h: Math.max(52, p0.h * 0.16),
         text:'LATER THAT NIGHT…', fill:'#FFF8E1', stroke:'#000000', strokeW:2.5,
         font:"'Comic Neue',cursive", fontSize:20, color:'#222', align:'left', autoFit:true, pad:8, tails:[],
@@ -3847,13 +4124,13 @@ function generateLayout(opt){
         /* keep the tail pointing at someone inside the panel, not out through the gutter */
         const ty = Math.min(by + bh * 1.45, p.y + p.h - Math.max(10, p.h * 0.06));
         o.tails = [{x: bx + bw*0.3, y: Math.max(by + bh * 1.05, ty), style:'curve', w:0.17, bend:0.25}];
-        pg.objects.push(o);
+        addToPage(pg, o);
       });
     }
     if (opt.sfx){
       const big = panels.slice().sort((a,b) => (b.w*b.h) - (a.w*a.h))[0];
       if (big){
-        pg.objects.push(mkObj('sfx', {
+        addToPage(pg, mkObj('sfx', {
           text:'KRAKOOM!', x: big.x + big.w*0.12, y: big.y + big.h*0.55,
           w: big.w*0.76, h: Math.max(60, big.h*0.3),
           font:"'Bangers',cursive", fontSize: 120, fill:'#FFD814',
@@ -3862,8 +4139,8 @@ function generateLayout(opt){
       }
     }
     if (opt.pageNum){
-      pg.objects = pg.objects.filter(o => !o.isPageNum);
-      pg.objects.push(mkObj('text', {
+      removeObjsWhere(pg, o => o.isPageNum);
+      addToPage(pg, mkObj('text', {
         isPageNum:true, text:String(pi + 1), x:S.P.w/2 - 60, y:S.P.h - Math.min(S.P.h*0.05, 48),
         w:120, h:30, font:"'IBM Plex Mono',monospace", fontSize:Math.max(12, S.P.w*0.02),
         color:'#222', align:'center', autoFit:false, pad:0,
@@ -3878,11 +4155,11 @@ function generateLayout(opt){
 function generateNovelPage(pg, kind, margin){
   const W = S.P.w, H = S.P.h, m = Math.max(margin, W * 0.11);
   const T = (text, x, y, w, h, size, font, align, extra) =>
-    pg.objects.push(mkObj('text', Object.assign({
+    addToPage(pg, mkObj('text', Object.assign({
       text, x, y, w, h, fontSize:size, font, align: align || 'center', color:'#111',
       autoFit:false, pad:0, lineHeight:1.5,
     }, extra || {})));
-  const rule = (x, y, w) => pg.objects.push(mkObj('shape', {kind:'line', x, y, w, h:0, stroke:'#111', strokeW:2}));
+  const rule = (x, y, w) => addToPage(pg, mkObj('shape', {kind:'line', x, y, w, h:0, stroke:'#111', strokeW:2}));
   const body = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\n\nExcepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.";
   switch (kind){
     case 'title':
@@ -3904,15 +4181,15 @@ function generateNovelPage(pg, kind, margin){
       T(body, W/2 + 14, m, (W-m*2)/2 - 14, H-m*2, W*0.024, "'Lora',serif", 'left');
       break;
     case 'illus':
-      pg.objects.push(mkObj('panel', {x:m, y:m, w:W-m*2, h:H*0.45, style:'rect', stroke:'#111', strokeW:3, fill:'#ffffff'}));
+      addToPage(pg, mkObj('panel', {x:m, y:m, w:W-m*2, h:H*0.45, style:'rect', stroke:'#111', strokeW:3, fill:'#ffffff'}));
       T(body, m, m + H*0.48, W-m*2, H*0.4, W*0.026, "'Lora',serif", 'left');
       break;
     case 'half':
-      pg.objects.push(mkObj('panel', {x:m, y:m, w:W-m*2, h:(H-m*2)/2 - 10, style:'rect', stroke:'#111', strokeW:3, fill:'#fff'}));
+      addToPage(pg, mkObj('panel', {x:m, y:m, w:W-m*2, h:(H-m*2)/2 - 10, style:'rect', stroke:'#111', strokeW:3, fill:'#fff'}));
       T(body, m, H/2 + 10, W-m*2, (H-m*2)/2 - 10, W*0.026, "'Lora',serif", 'left');
       break;
     case 'front':
-      pg.objects.push(mkObj('panel', {x:W*0.18, y:H*0.16, w:W*0.64, h:H*0.6, style:'double', stroke:'#111', strokeW:3, fill:'#fff'}));
+      addToPage(pg, mkObj('panel', {x:W*0.18, y:H*0.16, w:W*0.64, h:H*0.6, style:'double', stroke:'#111', strokeW:3, fill:'#fff'}));
       T('“A single frame can hold a whole world.”', m, H*0.8, W-m*2, H*0.1, W*0.028, "'Lora',serif");
       break;
     case 'quote':
@@ -3931,8 +4208,228 @@ function generateNovelPage(pg, kind, margin){
    ============================================================================ */
 function addAsset(src, name, w, h){
   const id = uid('a');
-  S.P.assets[id] = {id, name: name || 'image', src, w: w || 0, h: h || 0};
+  const gif = /^data:image\/gif/i.test(src || '');
+  S.P.assets[id] = {id, name: name || 'image', src, w: w || 0, h: h || 0, gif};
   return id;
+}
+/* ------------------------------------------------------------------- GIFs
+   Browsers only advance an <img> GIF while it is on screen, and a canvas never
+   sees those frames reliably — so InkForge decodes the GIF itself and plays the
+   frames. That also means a frame can be held still for an export. */
+const gifPlayers = {};
+function lzwDecode(minCodeSize, data, pixelCount){
+  const MAX = 4096, clear = 1 << minCodeSize, eoi = clear + 1;
+  const dict = new Array(MAX);
+  const out = new Uint8Array(pixelCount);
+  let codeSize = minCodeSize + 1, next = eoi + 1, oi = 0, bit = 0, prev = -1;
+  const reset = () => {
+    codeSize = minCodeSize + 1; next = eoi + 1;
+    for (let i = 0; i < clear; i++) dict[i] = [i];
+    dict[clear] = []; dict[eoi] = [];
+  };
+  const readCode = () => {
+    let code = 0;
+    for (let i = 0; i < codeSize; i++){
+      const byte = data[bit >> 3];
+      if (byte === undefined) return eoi;
+      code |= ((byte >> (bit & 7)) & 1) << i;
+      bit++;
+    }
+    return code;
+  };
+  reset();
+  while (oi < pixelCount){
+    const code = readCode();
+    if (code === eoi) break;
+    if (code === clear){ reset(); prev = -1; continue; }
+    let entry;
+    if (code < next && dict[code]) entry = dict[code];
+    else if (prev >= 0 && dict[prev]) entry = dict[prev].concat([dict[prev][0]]);
+    else break;
+    for (let i = 0; i < entry.length && oi < pixelCount; i++) out[oi++] = entry[i];
+    if (prev >= 0 && next < MAX){
+      dict[next++] = dict[prev].concat([entry[0]]);
+      if (next === (1 << codeSize) && codeSize < 12) codeSize++;
+    }
+    prev = code;
+  }
+  return out;
+}
+function decodeGIF(buf){
+  const d = new Uint8Array(buf);
+  let p = 0;
+  const str = n => { let s2 = ''; for (let i = 0; i < n; i++) s2 += String.fromCharCode(d[p++]); return s2; };
+  const u16 = () => { const v = d[p] | (d[p+1] << 8); p += 2; return v; };
+  if (str(6).slice(0, 3) !== 'GIF') throw new Error('not a GIF');
+  const W = u16(), H = u16(), packed = d[p++];
+  p++; p++;                                   // background index, aspect
+  let gct = null;
+  if (packed & 0x80){
+    const n = 1 << ((packed & 7) + 1);
+    gct = d.subarray(p, p + n * 3); p += n * 3;
+  }
+  const readBlocks = () => {
+    const parts = [];
+    let len, total = 0;
+    while ((len = d[p++])){ parts.push(d.subarray(p, p + len)); total += len; p += len; }
+    const all = new Uint8Array(total);
+    let o = 0;
+    for (const part of parts){ all.set(part, o); o += part.length; }
+    return all;
+  };
+  const frames = [];
+  let delay = 100, transparent = -1, disposal = 0;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const cx = canvas.getContext('2d', {willReadFrequently:true});
+  let prevSnapshot = null, budget = 60e6;
+  while (p < d.length){
+    const block = d[p++];
+    if (block === 0x3B) break;
+    if (block === 0x21){
+      const label = d[p++];
+      if (label === 0xF9){
+        p++;                                   // block size (4)
+        const flags = d[p++];
+        disposal = (flags >> 2) & 7;
+        transparent = (flags & 1) ? 0 : -1;
+        delay = Math.max(20, u16() * 10);
+        const ti = d[p++];
+        if (transparent === 0) transparent = ti;
+        p++;                                   // block terminator
+      } else { readBlocks(); }
+      continue;
+    }
+    if (block !== 0x2C) break;
+    const fx = u16(), fy = u16(), fw = u16(), fh = u16(), fpacked = d[p++];
+    let lct = null;
+    if (fpacked & 0x80){
+      const n = 1 << ((fpacked & 7) + 1);
+      lct = d.subarray(p, p + n * 3); p += n * 3;
+    }
+    const interlaced = !!(fpacked & 0x40);
+    const minCode = d[p++];
+    const raw = readBlocks();
+    const pal = lct || gct;
+    if (!pal || fw <= 0 || fh <= 0) continue;
+    const idx = lzwDecode(minCode, raw, fw * fh);
+    if (disposal === 3) prevSnapshot = cx.getImageData(0, 0, W, H);
+    const img = cx.getImageData(fx, fy, Math.min(fw, W - fx), Math.min(fh, H - fy));
+    const px = img.data, iw = img.width, ih = img.height;
+    const rows = [];
+    if (interlaced){
+      for (const [start, step] of [[0,8],[4,8],[2,4],[1,2]]) for (let y = start; y < fh; y += step) rows.push(y);
+    } else for (let y = 0; y < fh; y++) rows.push(y);
+    for (let r = 0; r < rows.length; r++){
+      const y = rows[r];
+      if (y >= ih) continue;
+      for (let x = 0; x < fw && x < iw; x++){
+        const ci = idx[r * fw + x];
+        if (ci === transparent) continue;
+        const o = (y * iw + x) * 4, c = ci * 3;
+        px[o] = pal[c]; px[o+1] = pal[c+1]; px[o+2] = pal[c+2]; px[o+3] = 255;
+      }
+    }
+    cx.putImageData(img, fx, fy);
+    const out = document.createElement('canvas');
+    out.width = W; out.height = H;
+    out.getContext('2d').drawImage(canvas, 0, 0);
+    frames.push({cv: out, delay});
+    budget -= W * H;
+    if (disposal === 2) cx.clearRect(fx, fy, fw, fh);
+    else if (disposal === 3 && prevSnapshot) cx.putImageData(prevSnapshot, 0, 0);
+    if (budget < 0 || frames.length >= 240) break;
+  }
+  if (!frames.length) throw new Error('no frames');
+  return {w:W, h:H, frames};
+}
+function ensureGifPlayer(id){
+  if (gifPlayers[id]) return gifPlayers[id];
+  const a = S.P.assets[id];
+  if (!a || !a.gif) return null;
+  const player = gifPlayers[id] = {ready:false, idx:0, acc:0, frames:[]};
+  fetch(a.src).then(r => r.arrayBuffer()).then(buf => {
+    const g = decodeGIF(buf);
+    player.frames = g.frames;
+    player.ready = g.frames.length > 1;
+    player.single = g.frames.length === 1;
+    a.frames = g.frames.length;
+    requestRender(); updateGifLoop();
+  }).catch(err => { player.failed = true; console.warn('GIF decode failed', err); });
+  return player;
+}
+function gifFrame(id){
+  const pl = gifPlayers[id] || ensureGifPlayer(id);
+  if (!pl || !pl.ready || !pl.frames.length) return null;
+  return pl.frames[clamp(pl.idx, 0, pl.frames.length - 1)].cv;
+}
+function tickGifs(dt){
+  let moved = false;
+  for (const id in gifPlayers){
+    const pl = gifPlayers[id];
+    if (!pl.ready || pl.frames.length < 2) continue;
+    pl.acc += dt;
+    let guard = 0;
+    while (pl.acc >= pl.frames[pl.idx].delay && guard++ < 60){
+      pl.acc -= pl.frames[pl.idx].delay;
+      pl.idx = (pl.idx + 1) % pl.frames.length;
+      moved = true;
+    }
+  }
+  return moved;
+}
+/* The loop only runs while a GIF is actually on the current page. */
+let _gifTimer = null, _gifLast = 0;
+function updateGifLoop(){
+  let needs = false;
+  if (S.P && S.P.pages && S.P.pages[S.cur] && !S.gifPaused){
+    needs = objs().some(o => {
+      if (o.type !== 'image' || o.hidden) return false;
+      const a = S.P.assets[o.asset];
+      if (!a || !a.gif) return false;
+      ensureGifPlayer(o.asset);
+      return true;
+    });
+  }
+  if (needs && !_gifTimer){
+    _gifLast = Date.now();
+    _gifTimer = setInterval(() => {
+      const now = Date.now(), dt = now - _gifLast;
+      _gifLast = now;
+      if (S.gifPaused) return;
+      if (tickGifs(dt) && !S.drag) requestRender();
+    }, 60);
+  } else if (!needs && _gifTimer){ clearInterval(_gifTimer); _gifTimer = null; }
+}
+/* Freeze every GIF on its current frame so an export captures exactly what is
+   on screen, and nothing shifts mid-download. */
+function pauseGifs(){
+  S.gifPaused = true;
+  updateGifLoop();
+  S.gifFrozen = {};
+  let n = 0;
+  for (const id in S.P.assets){
+    const a = S.P.assets[id];
+    if (!a.gif) continue;
+    const frame = gifFrame(id);
+    if (frame){ S.gifFrozen[id] = frame; n++; continue; }
+    const im = imgCache[id];
+    if (!im || !im.complete || !im.naturalWidth) continue;
+    const cv = document.createElement('canvas');
+    cv.width = im.naturalWidth; cv.height = im.naturalHeight;
+    cv.getContext('2d').drawImage(im, 0, 0);
+    S.gifFrozen[id] = cv; n++;
+  }
+  if (n) status(n + ' GIF' + (n > 1 ? 's' : '') + ' held on their current frame for export');
+  return n;
+}
+function resumeGifs(delay){
+  setTimeout(() => {
+    S.gifPaused = false;
+    S.gifFrozen = null;
+    updateGifLoop();
+    requestRender();
+  }, delay == null ? 1400 : delay);
 }
 function readFileAsDataURL(file){
   return new Promise((res, rej) => {
@@ -3951,7 +4448,7 @@ function loadImageEl(src){
   });
 }
 async function importImageFiles(files, mode){
-  const list = Array.from(files).filter(f => /^image\//.test(f.type));
+  const list = Array.from(files).filter(f => /^image\//.test(f.type) || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(f.name));
   if (!list.length){ toast('No images in that drop', 'err'); return; }
   const ids = [];
   for (const f of list){
@@ -3967,7 +4464,7 @@ async function importImageFiles(files, mode){
       const a = S.P.assets[id];
       const pg = (i === 0 && !objs().length) ? page() : addPage();
       const sc = Math.min(S.P.w / a.w, S.P.h / a.h);
-      pg.objects.push(mkObj('image', {
+      addToPage(pg, mkObj('image', {
         asset:id, w:a.w*sc, h:a.h*sc, x:(S.P.w - a.w*sc)/2, y:(S.P.h - a.h*sc)/2,
         filter:{bright:100, contrast:100, sat:100},
       }));
@@ -3975,11 +4472,32 @@ async function importImageFiles(files, mode){
     pushHist('Import images as pages');
     buildFilmstrip(); requestRender();
     toast(ids.length + ' image page' + (ids.length>1?'s':'') + ' imported', 'ok');
-  } else {
+  } else if (mode === 'arm'){
     S.pendingImage = ids[ids.length-1];
     showTab('assets');
-    toast(ids.length + ' image' + (ids.length>1?'s':'') + ' added — click the canvas to place', 'ok');
     setTool('image');
+    toast('Click or drag on the page to place it');
+  } else {
+    /* default: straight into the book on the active layer, ready to drag */
+    const placed = [];
+    ids.forEach((id, i) => {
+      const a = S.P.assets[id];
+      const sc = Math.min(1, (S.P.w * 0.6) / (a.w || 1), (S.P.h * 0.6) / (a.h || 1));
+      const w = (a.w || 300) * sc, h = (a.h || 300) * sc;
+      const off = i * 26;
+      placed.push(addToPage(page(), mkObj('image', {
+        asset:id, w, h,
+        x: clamp((S.P.w - w)/2 + off, 0, Math.max(0, S.P.w - w)),
+        y: clamp((S.P.h - h)/2 + off, 0, Math.max(0, S.P.h - h)),
+        filter:{bright:100, contrast:100, sat:100}, name: a.name,
+      })));
+    });
+    S.sel = placed.map(o => o.id);
+    setTool('select');
+    pushHist('Add image');
+    updateGifLoop();
+    requestRender(); refreshSidebars();
+    toast(ids.length + ' image' + (ids.length>1?'s':'') + ' added to the page — drag to move, Ctrl+D to copy', 'ok');
   }
   scheduleAutosave();
   return ids;
@@ -3991,8 +4509,9 @@ function buildAssets(){
   let html = '<div class="sec"><div class="sec-body" style="padding-top:12px">' +
     '<button class="mini-btn" data-act="importImages" style="padding:9px">＋ Import images</button>' +
     '<button class="mini-btn" data-act="importPDF" style="padding:9px">📥 Import PDF as pages</button>' +
-    '<div style="font-size:9.5px;color:var(--text3);line-height:1.7">Click an image to arm it, then drag on the page to place it. ' +
-    'Drop an image straight onto a panel to fill that panel.</div></div></div>';
+    '<div style="font-size:9.5px;color:var(--text3);line-height:1.7">Importing drops the image straight onto the page — drag it, ' +
+    'Ctrl+D to copy it. Click a thumbnail below to place another copy, or drop an image onto a panel to fill it. ' +
+    'Animated GIFs play right in the editor.</div></div></div>';
   if (!ids.length){
     html += '<div class="empty-note"><b>No images yet</b>Import photos, textures, scans or reference art — they stay in the project file.</div>';
   } else {
@@ -4009,6 +4528,7 @@ function buildAssets(){
       if (ev.target.dataset.delasset) return;
       S.pendingImage = el.dataset.asset;
       setTool('image');
+      buildAssets();
       toast('Drag on the page to place — or click once for full size');
     };
   });
@@ -4016,7 +4536,7 @@ function buildAssets(){
     el.onclick = ev => {
       ev.stopPropagation();
       const id = el.dataset.delasset;
-      const used = S.P.pages.some(p => p.objects.some(o => o.asset === id || o.img === id));
+      const used = S.P.pages.some(p => pageObjects(p).some(o => o.asset === id || o.img === id));
       if (used && !confirm('That image is used on a page. Remove it anyway?')) return;
       delete S.P.assets[id];
       delete imgCache[id];
@@ -4046,6 +4566,39 @@ async function registerFont(name, data){
 
 /* -------------------------------------------------------------- PDF import */
 let _pdfFile = null;
+let _pdfWorker = null;
+/* A worker script served from a CDN cannot be started by a page opened from
+   file:// — the browser blocks the cross-origin worker. Fetching the script and
+   running it from a blob URL makes it same-origin, which is what finally makes
+   PDF import work locally. */
+function setupPdfWorker(){
+  if (_pdfWorker) return _pdfWorker;
+  _pdfWorker = (async () => {
+    const src = (LIBS.pdfjs.loadedUrl || LIBS.pdfjs.urls[0]).replace('pdf.min.js', 'pdf.worker.min.js');
+    try {
+      const r = await fetch(src, {mode:'cors'});
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const code = await r.text();
+      pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(new Blob([code], {type:'text/javascript'}));
+    } catch (err){
+      pdfjsLib.GlobalWorkerOptions.workerSrc = src;
+    }
+  })();
+  return _pdfWorker;
+}
+async function openPdfDoc(buf){
+  await setupPdfWorker();
+  try {
+    return await pdfjsLib.getDocument({data: buf}).promise;
+  } catch (err){
+    if (err && (err.name === 'PasswordException' || /password/i.test(err.message || ''))){
+      const pw = prompt('This PDF is password protected. Enter its password:');
+      if (pw == null) throw new Error('Import cancelled');
+      return await pdfjsLib.getDocument({data: buf, password: pw}).promise;
+    }
+    throw err;
+  }
+}
 function openPdfImport(file){
   _pdfFile = file;
   $('impSub').textContent = file.name + ' — pages are rasterised at high resolution and placed as full-page images you can draw over.';
@@ -4064,7 +4617,7 @@ async function runPdfImport(){
   try {
     await loadLib('pdfjs');
     const buf = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({data: buf}).promise;
+    const pdf = await openPdfDoc(buf);
     const n = pdf.numPages;
     const made = [];
     /* keep a lid on memory for long documents */
@@ -4103,12 +4656,12 @@ async function runPdfImport(){
       });
     };
     if (mode === 'current'){
-      objs().push(mkImg(made[0].id));
+      addToPage(page(), mkImg(made[0].id));
     } else {
       if (mode === 'replace'){ S.P.pages = []; S.cur = 0; }
       made.forEach(m => {
         const pg = newPage();
-        pg.objects.push(mkImg(m.id));
+        addToPage(pg, mkImg(m.id));
         S.P.pages.push(pg);
       });
       if (!S.P.pages.length) S.P.pages.push(newPage());
@@ -4121,7 +4674,10 @@ async function runPdfImport(){
     toast(n + ' PDF page' + (n>1?'s':'') + ' imported at ' + renderDpi + ' DPI', 'ok');
   } catch (err){
     console.error(err);
-    toast('PDF import failed: ' + err.message, 'err');
+    const msg = (err && err.message) || String(err);
+    toast(/load|network|fetch|Failed/i.test(msg)
+      ? 'PDF import needs internet the first time (it fetches the PDF engine). ' + msg
+      : 'PDF import failed: ' + msg, 'err');
   } finally {
     btn.disabled = false; btn.textContent = 'IMPORT →';
     prog.classList.add('hide'); bar.style.width = '0%';
@@ -4144,7 +4700,7 @@ async function loadProjectData(data){
   const P = data.project || data;
   if (!P || !P.pages) throw new Error('Not an InkForge project');
   S.P = Object.assign(newProject(), P);
-  S.P.pages.forEach(pg => { pg.objects = pg.objects || []; pg.objects.forEach(o => { delete o._bb; }); });
+  S.P.pages.forEach(pg => { migratePage(pg); pageObjects(pg).forEach(o => { delete o._bb; }); });
   S.cur = 0; S.sel = [];
   for (const k in imgCache) delete imgCache[k];
   for (const f of (S.P.fonts || [])){ try { await registerFont(f.name, f.data); } catch (e) { /* skip */ } }
@@ -4153,6 +4709,7 @@ async function loadProjectData(data){
   pushHist('Open project');
   $('projNameInput').value = S.P.name;
   resizeCanvases(); fitView(); buildFilmstrip(); buildAssets(); refreshSidebars(); updateStatus(); requestRender();
+  updateGifLoop();
   toast('Opened “' + S.P.name + '” — ' + S.P.pages.length + ' pages', 'ok');
 }
 async function openProjectFile(file){
@@ -4206,7 +4763,7 @@ function initDropZone(){
     /* dropping onto a panel fills that panel */
     const p = evPage(e);
     const target = hitTest(p.x, p.y);
-    const ids = await importImageFiles(imgs, 'library');
+    const ids = await importImageFiles(imgs, target && target.type === 'panel' ? 'arm' : 'drop');
     if (target && target.type === 'panel' && ids && ids.length){
       target.img = ids[0];
       S.pendingImage = null;
@@ -4216,12 +4773,14 @@ function initDropZone(){
       requestRender(); refreshInspector();
       toast('Panel filled with image', 'ok');
     } else if (ids && ids.length){
-      const a = S.P.assets[ids[0]];
-      const sc = Math.min(1, (S.P.w * 0.55) / a.w);
-      addObject(mkObj('image', {
-        asset:ids[0], w:a.w*sc, h:a.h*sc, x:p.x - a.w*sc/2, y:p.y - a.h*sc/2,
-        filter:{bright:100, contrast:100, sat:100},
-      }), {label:'Drop image'});
+      /* drop lands where the cursor was */
+      const dropped = selObjs();
+      if (dropped.length){
+        const b = objBounds(dropped[0]);
+        dropped.forEach((o, i) => moveObj(o, p.x - b.x - b.w/2 + i*20, p.y - b.y - b.h/2 + i*20));
+        pushHist('Drop image');
+        requestRender();
+      }
       S.pendingImage = null; setTool('select');
     }
   });
@@ -4285,7 +4844,7 @@ function renderPageAt(pgIndex, o){
   const cx = cv.getContext('2d');
   cx.fillStyle = '#ffffff';
   cx.fillRect(0, 0, d.w, d.h);
-  renderPage(cx, pg, {scale: d.scale, bleed: d.pad, artKey:'exportart'});
+  renderPage(cx, pg, {scale: d.scale, bleed: d.pad, artKey:'exportart', forExport:true});
   if (o.nums){
     cx.save();
     cx.setTransform(1,0,0,1,0,0);
@@ -4333,6 +4892,8 @@ async function doExportPDF(){
   const o = exportOpts();
   if (!o.pages.length){ toast('That page range is empty', 'err'); return; }
   await ensureAssets();
+  pauseGifs();
+
   status('Loading PDF engine…');
   setProg(0.01);
   try {
@@ -4366,12 +4927,14 @@ async function doExportPDF(){
   } catch (err){
     console.error(err);
     toast('PDF export failed: ' + err.message, 'err');
-  } finally { setProg(null); status('Ready'); }
+  } finally { setProg(null); status('Ready'); resumeGifs(); }
 }
 async function doExportPNG(){
   const o = exportOpts();
   if (!o.pages.length){ toast('That page range is empty', 'err'); return; }
   await ensureAssets();
+  pauseGifs();
+
   setProg(0.01);
   for (let i = 0; i < o.pages.length; i++){
     status('Exporting page ' + (o.pages[i]+1) + '…');
@@ -4384,12 +4947,15 @@ async function doExportPNG(){
     await wait(180);
   }
   setProg(null); status('Ready');
+  resumeGifs(900);
   toast(o.pages.length + ' page file' + (o.pages.length>1?'s':'') + ' exported at ' + o.dpi + ' DPI', 'ok');
 }
 async function doExportZIP(){
   const o = exportOpts();
   if (!o.pages.length){ toast('That page range is empty', 'err'); return; }
   await ensureAssets();
+  pauseGifs();
+
   setProg(0.01);
   try {
     await loadLib('jszip');
@@ -4412,13 +4978,15 @@ async function doExportZIP(){
   status('Compressing…');
   const out = await zip.generateAsync({type:'blob'}, m => setProg(0.9 + m.percent/1000));
   downloadBlob(out, fileSafe(S.P.name) + '_' + o.dpi + 'dpi.zip');
-  setProg(null); status('Ready');
+  setProg(null); status('Ready'); resumeGifs(900);
   toast('ZIP exported — ' + o.pages.length + ' pages', 'ok');
 }
 async function doExportStrip(){
   const o = exportOpts();
   if (!o.pages.length) return;
   await ensureAssets();
+  pauseGifs();
+
   const gap = 0;
   let scale = o.dpi / UNIT_DPI;
   const totalH = (S.P.h * o.pages.length + gap * (o.pages.length-1));
@@ -4437,14 +5005,14 @@ async function doExportStrip(){
     await raf();
     cx.save();
     cx.translate(0, Math.round(i * (S.P.h + gap) * scale));
-    renderPage(cx, S.P.pages[o.pages[i]], {scale, artKey:'stripart'});
+    renderPage(cx, S.P.pages[o.pages[i]], {scale, artKey:'stripart', forExport:true});
     cx.restore();
     setProg((i+1) / o.pages.length);
   }
   const blob = await canvasBlob(cv, o.fmt, o.quality);
   downloadBlob(blob, fileSafe(S.P.name) + '_webtoon_strip.' + (o.fmt === 'jpeg' ? 'jpg' : 'png'));
   cv.width = cv.height = 1;
-  setProg(null); status('Ready');
+  setProg(null); status('Ready'); resumeGifs(900);
   toast('Webtoon strip exported', 'ok');
 }
 async function doPrint(){
@@ -4452,6 +5020,7 @@ async function doPrint(){
   area.innerHTML = '';
   status('Preparing print…');
   await ensureAssets();
+  pauseGifs();
   const o = {dpi:150, fmt:'png', quality:0.95, bleed:false, marks:false, gray:false, nums:false};
   for (let i = 0; i < S.P.pages.length; i++){
     const cv = renderPageAt(i, o);
@@ -4462,7 +5031,7 @@ async function doPrint(){
     await raf();
   }
   status('Ready');
-  setTimeout(() => { window.print(); setTimeout(() => { area.innerHTML = ''; }, 1500); }, 250);
+  setTimeout(() => { window.print(); setTimeout(() => { area.innerHTML = ''; resumeGifs(0); }, 1500); }, 250);
 }
 function downloadApp(){
   const doc = document.documentElement.cloneNode(true);
@@ -5167,54 +5736,278 @@ function growBubbleToText(o){
 }
 
 /* ---------------------------------------------------------------- layers */
+function layerOp(label, fn){
+  fn();
+  pushHist(label);
+  requestRender(); buildLayers(); updateStatus();
+}
+function addLayer(){
+  const pg = page(), act = activeLayer(pg);
+  const par = nodeParentArr(pg, act.id);
+  const L = newLayer('Layer ' + (flatLayers(pg).length + 1));
+  if (par) par.arr.splice(par.i + 1, 0, L); else pg.layers.push(L);
+  pg.active = L.id;
+  layerOp('Add layer', () => {});
+  toast('Now drawing on “' + L.name + '”', 'ok');
+}
+function addFolderNode(){
+  const pg = page(), act = activeLayer(pg);
+  const par = nodeParentArr(pg, act.id);
+  const F = newFolder('Folder ' + (pg.layers.filter(n => n.type === 'folder').length + 1));
+  if (par) par.arr.splice(par.i + 1, 0, F); else pg.layers.push(F);
+  layerOp('Add folder', () => {});
+}
+function deleteNode(id){
+  const pg = page(), node = layerById(pg, id);
+  if (!node) return;
+  const layers = flatLayers(pg);
+  const inside = node.type === 'folder'
+    ? flatLayers({layers:[node]}).reduce((a, L) => a + L.objects.length, 0)
+    : node.objects.length;
+  const remaining = node.type === 'folder'
+    ? layers.filter(L => !isInside(node, L.id)).length
+    : layers.length - 1;
+  if (remaining < 1){ toast('A page needs at least one layer', 'err'); return; }
+  if (inside && !confirm('Delete “' + node.name + '” and the ' + inside + ' object' + (inside > 1 ? 's' : '') + ' on it?')) return;
+  const par = nodeParentArr(pg, id);
+  if (!par) return;
+  par.arr.splice(par.i, 1);
+  if (!layerById(pg, pg.active)) pg.active = (flatLayers(pg)[0] || {}).id;
+  S.sel = S.sel.filter(sid => findObj(sid));
+  layerOp('Delete layer', () => {});
+  refreshInspector();
+}
+function isInside(folder, id){
+  let hit = false;
+  const walk = nodes => { for (const n of nodes || []){ if (n.id === id) hit = true; if (n.type === 'folder') walk(n.children); } };
+  walk(folder.children);
+  return hit;
+}
+function duplicateNode(id){
+  const pg = page(), par = nodeParentArr(pg, id);
+  if (!par) return;
+  const copy = JSON.parse(JSON.stringify(par.arr[par.i], jsonRep));
+  const rewrite = n => {
+    n.id = uid(n.type === 'folder' ? 'F' : 'L');
+    if (n.type === 'folder') (n.children || []).forEach(rewrite);
+    else (n.objects || []).forEach(o => { o.id = uid(o.type[0]); o.layer = n.id; });
+  };
+  rewrite(copy);
+  copy.name = copy.name + ' copy';
+  par.arr.splice(par.i + 1, 0, copy);
+  pg.active = copy.type === 'layer' ? copy.id : pg.active;
+  layerOp('Duplicate layer', () => {});
+}
+function mergeLayerDown(id){
+  const pg = page(), list = flatLayers(pg);
+  const i = list.findIndex(L => L.id === id);
+  if (i <= 0){ toast('Nothing underneath to merge into'); return; }
+  const below = list[i-1], me = list[i];
+  below.objects = below.objects.concat(me.objects.map(o => { o.layer = below.id; return o; }));
+  const par = nodeParentArr(pg, id);
+  if (par) par.arr.splice(par.i, 1);
+  pg.active = below.id;
+  layerOp('Merge down', () => {});
+}
+function moveSelectionToLayer(id){
+  const pg = page(), target = layerById(pg, id);
+  if (!target || target.type !== 'layer' || !S.sel.length) return;
+  const moving = selObjs();
+  const set = new Set(S.sel);
+  removeObjsWhere(pg, o => set.has(o.id));
+  moving.forEach(o => { o.layer = target.id; target.objects.push(o); });
+  pg.active = target.id;
+  layerOp('Move to layer', () => {});
+  toast(moving.length + ' moved to “' + target.name + '”', 'ok');
+}
+function moveNode(dragId, targetId, where){
+  const pg = page();
+  if (dragId === targetId) return;
+  const node = layerById(pg, dragId);
+  if (!node || (node.type === 'folder' && isInside(node, targetId))) return;
+  const from = nodeParentArr(pg, dragId);
+  if (!from) return;
+  from.arr.splice(from.i, 1);
+  if (where === 'in'){
+    const folder = layerById(pg, targetId);
+    if (folder && folder.type === 'folder'){ folder.children = folder.children || []; folder.children.push(node); folder.open = true; }
+    else { pg.layers.push(node); }
+  } else {
+    const to = nodeParentArr(pg, targetId);
+    if (!to){ pg.layers.push(node); }
+    else to.arr.splice(where === 'after' ? to.i + 1 : to.i, 0, node);
+  }
+  layerOp('Reorder layers', () => {});
+}
+function setActiveLayer(id){
+  const pg = page(), L = layerById(pg, id);
+  if (!L || L.type !== 'layer') return;
+  pg.active = id;
+  buildLayers(); updateStatus();
+  status('Drawing on “' + L.name + '”');
+}
+function renameNode(id, row){
+  const pg = page(), node = layerById(pg, id);
+  if (!node) return;
+  const inp = el('input', 'num-inp');
+  inp.value = node.name;
+  inp.style.cssText = 'flex:1;min-width:0;font-size:10.5px;padding:2px 5px';
+  const nm = row.querySelector('.nm');
+  nm.replaceWith(inp);
+  inp.focus(); inp.select();
+  const done = save => {
+    if (save && inp.value.trim()) node.name = inp.value.trim().slice(0, 40);
+    buildLayers();
+    if (save) pushHist('Rename layer');
+  };
+  inp.onblur = () => done(true);
+  inp.onkeydown = e => {
+    e.stopPropagation();
+    if (e.key === 'Enter'){ e.preventDefault(); inp.blur(); }
+    if (e.key === 'Escape'){ inp.onblur = null; done(false); }
+  };
+}
 function buildLayers(){
   const host = $('tabLayers');
   if (!host) return;
+  const pg = page();
+  migratePage(pg);
   host.innerHTML = '';
-  const list = objs();
-  if (!list.length){
-    host.innerHTML = '<div class="empty-note"><b>This page is empty</b>Draw something, or hit ⚡ Auto Layout to drop in panels.</div>';
-    return;
-  }
-  const head = el('div', 'sec-hdr');
-  head.innerHTML = '<span>' + list.length + ' objects · top first</span><span style="color:var(--text3)">z</span>';
-  host.appendChild(head);
-  for (let i = list.length - 1; i >= 0; i--){
-    const o = list[i];
-    const row = el('div', 'layer-row' + (S.sel.indexOf(o.id) >= 0 ? ' sel' : ''));
+
+  const bar = el('div', 'sec');
+  const bb = el('div', 'sec-body');
+  bb.style.paddingTop = '10px';
+  const g = el('div', 'grid4');
+  [['＋', 'New layer', addLayer], ['📁', 'New folder', addFolderNode],
+   ['⧉', 'Duplicate layer', () => duplicateNode(page().active)],
+   ['🗑', 'Delete layer', () => deleteNode(page().active)]].forEach(([n, t, fn]) => {
+    const b = el('button', 'mini-btn', n); b.title = t; b.onclick = fn; g.appendChild(b);
+  });
+  bb.appendChild(g);
+  const g2 = el('div', 'grid2');
+  const mb = el('button', 'mini-btn', '⇩ Merge down');
+  mb.title = 'Merge this layer into the one below';
+  mb.onclick = () => mergeLayerDown(page().active);
+  const sb = el('button', 'mini-btn', '⇄ Move selection here');
+  sb.title = 'Move the selected objects onto the active layer';
+  sb.onclick = () => moveSelectionToLayer(page().active);
+  g2.appendChild(mb); g2.appendChild(sb);
+  bb.appendChild(g2);
+  const act = activeLayer(pg);
+  buildControls(bb, [{t:'range', k:'opacity', l:'Opacity', min:0.05, max:1, step:0.05, def:1, fmt:v => Math.round(v*100) + '%'}],
+    () => act.opacity == null ? 1 : act.opacity,
+    (k, v) => { act.opacity = v; requestRender(); clearTimeout(S._layerOpT); S._layerOpT = setTimeout(() => pushHist('Layer opacity'), 400); });
+  bar.appendChild(bb);
+  host.appendChild(bar);
+
+  const tree = el('div');
+  tree.style.cssText = 'padding-bottom:20px';
+  host.appendChild(tree);
+
+  const rowFor = (n, depth) => {
+    const isFolder = n.type === 'folder';
+    const row = el('div', 'layer-row' + (!isFolder && n.id === pg.active ? ' active-layer' : ''));
+    row.style.paddingLeft = (8 + depth * 13) + 'px';
     row.draggable = true;
-    row.dataset.id = o.id;
-    row.appendChild(el('span', 'ico', OBJ_ICON[o.type] || '◻'));
-    const nm = el('span', 'nm', objLabel(o));
+    row.dataset.node = n.id;
+    if (isFolder){
+      const car = el('span', 'ico', n.open === false ? '▸' : '▾');
+      car.onclick = ev => { ev.stopPropagation(); n.open = n.open === false; buildLayers(); };
+      row.appendChild(car);
+      row.appendChild(el('span', 'ico', '📁'));
+    } else {
+      const car = el('span', 'ico', n.openObjs ? '▾' : '▸');
+      car.title = 'Show the objects on this layer';
+      car.onclick = ev => { ev.stopPropagation(); n.openObjs = !n.openObjs; buildLayers(); };
+      row.appendChild(car);
+      row.appendChild(el('span', 'ico', n.id === pg.active ? '✏️' : '▤'));
+    }
+    const nm = el('span', 'nm', n.name);
     row.appendChild(nm);
+    if (!isFolder){
+      const cnt = el('span', 'act', String(n.objects.length));
+      cnt.style.cssText = 'opacity:.5;font-size:9px;min-width:14px;text-align:right';
+      row.appendChild(cnt);
+    }
+    const eye = el('span', 'act', n.visible === false ? '🙈' : '👁');
+    eye.title = 'Show / hide';
+    eye.onclick = ev => { ev.stopPropagation(); n.visible = n.visible === false; layerOp('Layer visibility', () => {}); };
+    const lk = el('span', 'act', n.locked ? '🔒' : '🔓');
+    lk.title = 'Lock / unlock';
+    lk.onclick = ev => { ev.stopPropagation(); n.locked = !n.locked; layerOp('Lock layer', () => {}); };
+    const pr = el('span', 'act', n.noExport ? '🚫' : '🖨');
+    pr.title = n.noExport ? 'Screen only — left out of exports' : 'Included in exports';
+    pr.onclick = ev => { ev.stopPropagation(); n.noExport = !n.noExport; layerOp('Export flag', () => {}); };
+    row.appendChild(eye); row.appendChild(lk); row.appendChild(pr);
+    row.onclick = () => { if (!isFolder) setActiveLayer(n.id); };
+    row.ondblclick = ev => { ev.stopPropagation(); renameNode(n.id, row); };
+    row.ondragstart = ev => { ev.dataTransfer.setData('text/inklayer', n.id); ev.dataTransfer.effectAllowed = 'move'; row.classList.add('dragging'); };
+    row.ondragend = () => { row.classList.remove('dragging'); };
+    row.ondragover = ev => {
+      if (ev.dataTransfer.types.indexOf('text/inklayer') < 0) return;
+      ev.preventDefault();
+      const r = row.getBoundingClientRect(), f = (ev.clientY - r.top) / r.height;
+      row.classList.remove('drop-above', 'drop-below', 'drop-in');
+      const where = (isFolder && f > 0.28 && f < 0.72) ? 'in' : (f < 0.5 ? 'before' : 'after');
+      row.classList.add(where === 'in' ? 'drop-in' : where === 'before' ? 'drop-above' : 'drop-below');
+      row._where = where;
+    };
+    row.ondragleave = () => row.classList.remove('drop-above', 'drop-below', 'drop-in');
+    row.ondrop = ev => {
+      ev.preventDefault();
+      row.classList.remove('drop-above', 'drop-below', 'drop-in');
+      const id = ev.dataTransfer.getData('text/inklayer');
+      if (id) moveNode(id, n.id, row._where || 'before');
+    };
+    return row;
+  };
+  const objRow = (o, depth) => {
+    const row = el('div', 'layer-row obj-row' + (S.sel.indexOf(o.id) >= 0 ? ' sel' : ''));
+    row.style.paddingLeft = (8 + depth * 13 + 20) + 'px';
+    row.appendChild(el('span', 'ico', OBJ_ICON[o.type] || '◻'));
+    row.appendChild(el('span', 'nm', objLabel(o)));
     const eye = el('span', 'act', o.hidden ? '🙈' : '👁');
     eye.onclick = ev => { ev.stopPropagation(); o.hidden = !o.hidden; pushHist('Hide'); requestRender(); buildLayers(); };
-    const lock = el('span', 'act', o.locked ? '🔒' : '🔓');
-    lock.onclick = ev => { ev.stopPropagation(); o.locked = !o.locked; pushHist('Lock'); buildLayers(); };
-    row.appendChild(eye); row.appendChild(lock);
+    const lk = el('span', 'act', o.locked ? '🔒' : '🔓');
+    lk.onclick = ev => { ev.stopPropagation(); o.locked = !o.locked; pushHist('Lock'); buildLayers(); };
+    row.appendChild(eye); row.appendChild(lk);
     row.onclick = ev => {
       if (ev.shiftKey){ const k = S.sel.indexOf(o.id); if (k >= 0) S.sel.splice(k, 1); else S.sel.push(o.id); }
       else S.sel = [o.id];
       setTool('select');
       requestRender(); refreshInspector(); buildLayers();
     };
-    row.ondblclick = () => { const b = objBounds(o); zoomToRect(b); };
-    row.ondragstart = ev => { ev.dataTransfer.setData('text/inkobj', o.id); row.classList.add('dragging'); };
-    row.ondragend = () => row.classList.remove('dragging');
-    row.ondragover = ev => { if (ev.dataTransfer.types.indexOf('text/inkobj') >= 0){ ev.preventDefault(); row.classList.add('drop-above'); } };
-    row.ondragleave = () => row.classList.remove('drop-above');
-    row.ondrop = ev => {
-      ev.preventDefault(); row.classList.remove('drop-above');
-      const id = ev.dataTransfer.getData('text/inkobj');
-      const from = list.findIndex(x => x.id === id);
-      const to = list.findIndex(x => x.id === o.id);
-      if (from < 0 || to < 0 || from === to) return;
-      const [m] = list.splice(from, 1);
-      list.splice(to, 0, m);
-      pushHist('Reorder'); requestRender(); buildLayers();
-    };
-    host.appendChild(row);
-  }
+    row.ondblclick = () => zoomToRect(objBounds(o));
+    return row;
+  };
+  /* topmost layer first, the way every art app shows it */
+  const render = (nodes, depth) => {
+    const rows = [];
+    for (const n of nodes || []){
+      const block = [];
+      block.push(rowFor(n, depth));
+      if (n.type === 'folder' && n.open !== false) block.push.apply(block, render(n.children, depth + 1));
+      if (n.type === 'layer' && n.openObjs){
+        const objRows = n.objects.slice().reverse().map(o => objRow(o, depth));
+        if (!objRows.length){
+          const e2 = el('div', 'layer-row');
+          e2.style.cssText = 'padding-left:' + (8 + depth*13 + 20) + 'px;opacity:.45;font-size:9.5px';
+          e2.textContent = 'empty';
+          objRows.push(e2);
+        }
+        block.push.apply(block, objRows);
+      }
+      rows.unshift(block);
+    }
+    return [].concat.apply([], rows);
+  };
+  render(pg.layers, 0).forEach(r => tree.appendChild(r));
+
+  const note = el('div', '');
+  note.style.cssText = 'padding:10px 12px;font-size:9.5px;color:var(--text3);line-height:1.7';
+  note.innerHTML = 'Everything you draw or place goes on the <b style="color:var(--yellow)">active</b> layer and stays there. ' +
+    'Double-click a name to rename · drag to reorder or drop into a folder.';
+  host.appendChild(note);
 }
 function inspectorPage(host){
   const P = S.P;
@@ -5315,6 +6108,9 @@ function updateStatus(){
   $('statPage').textContent = 'Page ' + (S.cur + 1) + '/' + S.P.pages.length;
   $('statSize').textContent = S.P.w + ' × ' + S.P.h;
   $('statObjs').textContent = objs().length + ' objects';
+  const al = activeLayer();
+  const lc = $('statLayer');
+  if (lc){ lc.textContent = al ? al.name : '—'; lc.onclick = () => showTab('layers'); }
   $('statSel').textContent = S.sel.length ? S.sel.length + ' selected' : '';
   $('pageDisp').textContent = 'Page ' + (S.cur + 1) + ' / ' + S.P.pages.length;
 }
@@ -5343,7 +6139,7 @@ const ACTIONS = {
   copy: copySel,
   paste: () => pasteClip(),
   duplicate: () => duplicateSel(),
-  selectAll: () => { S.sel = objs().filter(o => !o.locked && !o.hidden).map(o => o.id); setTool('select'); requestRender(); refreshSidebars(); },
+  selectAll: () => { S.sel = objs().filter(objUsable).map(o => o.id); setTool('select'); requestRender(); refreshSidebars(); },
   deselect: () => { S.sel = []; requestRender(); refreshSidebars(); },
   deleteSel,
   clearPage, clearAll: clearAllPages,
@@ -5377,6 +6173,9 @@ const ACTIONS = {
   togglePanelUI: () => { $('rpanel').classList.toggle('collapsed'); $('ckPanelUI').textContent = $('rpanel').classList.contains('collapsed') ? '☐' : '☑'; setTimeout(() => requestRender(), 60); },
   toggleFilm: () => { $('film').classList.toggle('collapsed'); $('ckFilm').textContent = $('film').classList.contains('collapsed') ? '☐' : '☑'; },
   shortcuts: () => { buildKeysModal(); showModal('mKeys'); },
+  printKit: () => openPrintKit('title'),
+  collab: () => openCollab(),
+  chat: () => toggleChat(),
   guide: () => { showHelp('start'); },
   changelog: () => { showHelp('new'); },
   dubOpen: () => openDub(),
@@ -5644,13 +6443,29 @@ function prepPageSetup(){
     g.appendChild(c);
   });
 }
+$('impGo').onclick = () => runPdfImport();
+$('chatSend').onclick = sendChat;
+$('chatText').addEventListener('keydown', e => {
+  e.stopPropagation();
+  if (e.key === 'Enter'){ e.preventDefault(); sendChat(); }
+  if (e.key === 'Escape'){ toggleChat(false); }
+});
+$('chatMinBtn').onclick = () => toggleChat(false);
+$('chatMicBtn').onclick = () => { if (!CL.on){ openCollab(); return; } CL.voice ? stopVoice() : startVoice(); };
+setInterval(() => {
+  if (!CL.on) return;
+  let stale = false;
+  const now = Date.now();
+  for (const sid in CL.peers) if (now - (CL.peers[sid].lastSeen || 0) > 20000) stale = true;
+  if (stale) requestUI();
+}, 5000);
 $('psApply').onclick = () => {
   const w = clamp(parseInt($('psW').value, 10) || S.P.w, 80, 12000);
   const h = clamp(parseInt($('psH').value, 10) || S.P.h, 80, 12000);
   const scale = $('psScale').checked;
   const sx = w / S.P.w, sy = h / S.P.h;
   if (scale && (sx !== 1 || sy !== 1)){
-    S.P.pages.forEach(pg => pg.objects.forEach(o => scaleObj(o, sx, sy, 0, 0)));
+    S.P.pages.forEach(pg => pageObjects(pg).forEach(o => scaleObj(o, sx, sy, 0, 0)));
   }
   S.P.w = w; S.P.h = h;
   S.P.dpi = parseInt($('psDpi').value, 10) || 300;
@@ -5724,6 +6539,9 @@ const KEYS = [
   ['0 / 1 / 2', 'Fit · 100% · 200%'],
   ['Page Up / Page Down', 'Previous · next page'],
   ['Tab', 'Hide the right panel'],
+  ['Together', ''],
+  ['C', 'Show / hide the chat'],
+  ['Click a name in the top-right', 'Jump to the page they are on'],
   ['Project', ''],
   ['Ctrl + N / O / S', 'New · Open · Save project'],
   ['Ctrl + E / Ctrl + P', 'Export · Print'],
@@ -5809,6 +6627,7 @@ window.addEventListener('keydown', e => {
   if (e.key === '['){ S.opts.size = Math.max(1, S.opts.size - 1); refreshOptbar(); return; }
   if (e.key === ']'){ S.opts.size = Math.min(120, S.opts.size + 1); refreshOptbar(); return; }
   if (e.key === '?'){ buildKeysModal(); showModal('mKeys'); return; }
+  if (e.key === 'c' || e.key === 'C'){ toggleChat(); return; }
   const t = TOOL_BY_KEY[e.key.toUpperCase()];
   if (t){ setTool(t); }
 });
@@ -5823,7 +6642,7 @@ function collectScript(opt){
   const pages = opt.all ? S.P.pages.map((p, i) => i) : [S.cur];
   for (const pi of pages){
     const pg = S.P.pages[pi];
-    const items = pg.objects.filter(o => !o.hidden && !o.isPageNum &&
+    const items = pageObjects(pg).filter(o => !o.hidden && !o.isPageNum &&
       (o.type === 'bubble' || o.type === 'text' || (opt.sfx && o.type === 'sfx')) && (o.text || '').trim());
     items.sort(readingOrder);
     if (!items.length) continue;
@@ -5885,6 +6704,1158 @@ $('dubPlay').onclick = () => {
 };
 $('dubStop').onclick = () => { if (window.speechSynthesis) speechSynthesis.cancel(); $('dubPlay').textContent = '▶ PLAY DUB'; };
 
+
+/* ============================================================================
+   COLLABORATION
+   Two transports share one protocol:
+     · WebRTC through the public PeerJS broker — people on other computers.
+     · BroadcastChannel — other tabs on this machine, and it works with no
+       internet at all, which is also how the sync is tested.
+   Both can run at once; every message carries an id and receivers de-duplicate.
+   ============================================================================ */
+const PEER_COLORS = ['#F2264B','#4C9BFF','#28D07B','#FFD814','#A97BFF','#33D6E0','#ff8a5c','#ff5ca8','#8ce9b6','#c98f5a'];
+const CL = {
+  on:false, role:null, room:'', roomLabel:'', passHash:'',
+  me:{id:'', name:'', color:PEER_COLORS[0]},
+  peers:{},            // sessionId -> {id,name,color,peerId,cursor,page,lastSeen,voice,talking}
+  peer:null, conns:{}, hostConn:null, bc:null,
+  pool:{},             // objects received before their layer arrived
+  shadow:{objs:null, struct:null},
+  seen:[], seenSet:new Set(),
+  chat:[], unread:0, chatOpen:false,
+  voice:false, muted:false, localStream:null, calls:{}, audios:{}, meters:{},
+  applying:false, status:'off', pending:{},
+};
+const collabActive = () => CL.on;
+function myPeerColor(id){
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return PEER_COLORS[h % PEER_COLORS.length];
+}
+function slugRoom(name){
+  return String(name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 24) || 'room';
+}
+async function sha(text){
+  if (!text) return '';
+  try {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('inkforge:' + text));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 24);
+  } catch (err){
+    let h = 5381;
+    for (let i = 0; i < text.length; i++) h = ((h * 33) ^ text.charCodeAt(i)) >>> 0;
+    return 'x' + h.toString(16);
+  }
+}
+
+/* ------------------------------------------------------------- transports */
+function bcSend(msg){ if (CL.bc){ try { CL.bc.postMessage(msg); } catch (err){} } }
+function peerSend(msg, onlyTo){
+  if (CL.role === 'host'){
+    for (const sid in CL.conns){
+      if (onlyTo && sid !== onlyTo) continue;
+      const c = CL.conns[sid];
+      try { if (c && c.open) c.send(msg); } catch (err){}
+    }
+  } else if (CL.hostConn){
+    try { if (CL.hostConn.open) CL.hostConn.send(msg); } catch (err){}
+  }
+}
+let _mid = 0;
+function sendMsg(msg, onlyTo){
+  if (!CL.on) return;
+  msg.v = 1;
+  msg.mid = CL.me.id + '-' + (++_mid);
+  msg.from = CL.me.id;
+  msg.room = CL.room;
+  CL.seenSet.add(msg.mid);
+  const parts = chunkify(msg);
+  for (const part of parts){
+    bcSend(part);            /* same-machine tabs filter on msg.to themselves */
+    peerSend(part, onlyTo);
+  }
+}
+const CHUNK = 40000;
+function chunkify(msg){
+  const json = JSON.stringify(msg);
+  if (json.length <= CHUNK) return [msg];
+  const n = Math.ceil(json.length / CHUNK), cid = msg.mid + '-c';
+  const out = [];
+  for (let i = 0; i < n; i++){
+    out.push({v:1, t:'chunk', mid: cid + i, from: msg.from, room: msg.room,
+              cid, i, n, part: json.slice(i * CHUNK, (i + 1) * CHUNK)});
+  }
+  return out;
+}
+function onWire(msg, via){
+  if (!msg || msg.v !== 1 || !CL.on) return;
+  if (msg.room && CL.room && msg.room !== CL.room) return;
+  if (msg.from === CL.me.id) return;
+  if (CL.seenSet.has(msg.mid)) return;
+  CL.seenSet.add(msg.mid);
+  CL.seen.push(msg.mid);
+  if (CL.seen.length > 4000){ const drop = CL.seen.splice(0, 2000); drop.forEach(m => CL.seenSet.delete(m)); }
+  if (msg.t === 'chunk'){
+    const slot = CL.pending[msg.cid] || (CL.pending[msg.cid] = {n: msg.n, got: 0, parts: []});
+    if (slot.parts[msg.i] == null){ slot.parts[msg.i] = msg.part; slot.got++; }
+    if (CL.role === 'host' && via === 'peer') peerSend(msg, null);
+    if (slot.got === slot.n){
+      delete CL.pending[msg.cid];
+      try { handleMsg(JSON.parse(slot.parts.join('')), via); } catch (err){ console.warn('bad chunk set', err); }
+    }
+    return;
+  }
+  if (CL.role === 'host' && via === 'peer' && msg.t !== 'hello') peerSend(msg, null);
+  handleMsg(msg, via);
+}
+
+/* ---------------------------------------------------------------- session */
+async function collabStart(opts){
+  const name = (opts.name || 'Artist').trim().slice(0, 22) || 'Artist';
+  localStorage.setItem('inkforge.name', name);
+  CL.me = {id: uid('u') + Math.random().toString(36).slice(2, 6), name, color: PEER_COLORS[0]};
+  CL.me.color = myPeerColor(CL.me.id);
+  CL.role = opts.role;
+  CL.room = opts.room;
+  CL.roomLabel = opts.label || opts.room;
+  CL.passHash = await sha(opts.pass || '');
+  CL.peers = {}; CL.pool = {}; CL.chat = []; CL.unread = 0;
+  CL.shadow = {objs:null, struct:null};
+  CL.on = true;
+  CL.status = 'connecting';
+  renderCollab();
+  /* same-machine bus always on: it costs nothing and works offline */
+  try {
+    CL.bc = new BroadcastChannel('inkforge-' + CL.room);
+    CL.bc.onmessage = e => onWire(e.data, 'bc');
+  } catch (err){ CL.bc = null; }
+  if (opts.online !== false){
+    try {
+      await loadLib('peerjs');
+      await peerConnect(opts);
+    } catch (err){
+      chatSys('Online rooms are unavailable (' + (err.message || err) + '). Running on this computer only — other tabs on this machine can still join.');
+      CL.online = false;
+    }
+  }
+  if (CL.role === 'host'){
+    CL.status = 'live';
+    syncShadow();
+    chatSys('Room “' + CL.roomLabel + '” is open. Share the code and start drawing.');
+  } else {
+    sendMsg({t:'hello', name: CL.me.name, color: CL.me.color, peerId: CL.myPeerId || '', pass: CL.passHash});
+    chatSys('Knocking on “' + CL.roomLabel + '”…');
+    setTimeout(() => {
+      if (CL.on && CL.status !== 'live'){
+        chatSys('No answer yet. Check the code, and make sure the host still has InkForge open.');
+        renderCollab();
+      }
+    }, 9000);
+  }
+  renderCollab();
+  requestRender();
+}
+function peerConnect(opts){
+  return new Promise((resolve, reject) => {
+    if (!window.Peer) return reject(new Error('PeerJS missing'));
+    let settled = false;
+    const done = fn => { if (!settled){ settled = true; fn(); } };
+    const wantId = CL.role === 'host' ? 'inkforge-' + CL.room : undefined;
+    const peer = wantId ? new Peer(wantId, {debug:0}) : new Peer({debug:0});
+    CL.peer = peer;
+    peer.on('open', id => {
+      CL.myPeerId = id;
+      CL.online = true;
+      if (CL.role === 'guest'){
+        const conn = peer.connect('inkforge-' + CL.room, {reliable:true, metadata:{name:CL.me.name}});
+        CL.hostConn = conn;
+        conn.on('open', () => {
+          sendMsg({t:'hello', name:CL.me.name, color:CL.me.color, peerId:id, pass:CL.passHash});
+        });
+        conn.on('data', d => onWire(d, 'peer'));
+        conn.on('close', () => { if (CL.on){ chatSys('Disconnected from the host.'); CL.status = 'lost'; renderCollab(); } });
+        conn.on('error', () => {});
+      }
+      done(resolve);
+    });
+    peer.on('connection', conn => {
+      conn.on('data', d => {
+        if (d && d.t === 'hello') CL.conns[d.from] = conn;
+        onWire(d, 'peer');
+      });
+      conn.on('close', () => {
+        for (const sid in CL.conns) if (CL.conns[sid] === conn) dropPeer(sid);
+      });
+    });
+    peer.on('call', call => {
+      call.answer(CL.localStream || undefined);
+      call.on('stream', rs => attachRemoteAudio(call.peer, rs));
+      CL.calls[call.peer] = call;
+    });
+    peer.on('error', err => {
+      const t = err && err.type;
+      if (t === 'unavailable-id' && CL.role === 'host'){
+        /* someone already runs a room with this name — take a suffixed code */
+        CL.room = CL.room + '-' + Math.random().toString(36).slice(2, 5);
+        CL.roomLabel = CL.roomLabel + ' (' + CL.room.split('-').pop() + ')';
+        try { peer.destroy(); } catch (e){}
+        try { CL.bc.close(); } catch (e){}
+        try { CL.bc = new BroadcastChannel('inkforge-' + CL.room); CL.bc.onmessage = e => onWire(e.data, 'bc'); } catch (e){}
+        peerConnect(opts).then(() => done(resolve), e => done(() => reject(e)));
+        return;
+      }
+      if (t === 'peer-unavailable'){
+        chatSys('No room with that code is online right now.');
+        CL.status = 'lost'; renderCollab();
+        return;
+      }
+      if (!settled) done(() => reject(new Error(t || 'connection failed')));
+    });
+    setTimeout(() => done(() => reject(new Error('timed out reaching the signalling server'))), 12000);
+  });
+}
+function collabStop(quiet){
+  if (!CL.on) return;
+  if (!quiet) sendMsg({t:'bye'});
+  CL.on = false; CL.status = 'off';
+  stopVoice();
+  try { CL.bc && CL.bc.close(); } catch (err){}
+  try { CL.peer && CL.peer.destroy(); } catch (err){}
+  CL.bc = null; CL.peer = null; CL.conns = {}; CL.hostConn = null;
+  CL.peers = {}; CL.pool = {};
+  CL.seen = []; CL.seenSet = new Set();
+  renderCollab(); requestRender();
+  toast('Left the room');
+}
+function dropPeer(sid){
+  const p = CL.peers[sid];
+  if (!p) return;
+  delete CL.peers[sid];
+  delete CL.conns[sid];
+  if (p.peerId && CL.calls[p.peerId]){ try { CL.calls[p.peerId].close(); } catch (e){} delete CL.calls[p.peerId]; }
+  if (p.peerId && CL.audios[p.peerId]){ CL.audios[p.peerId].remove(); delete CL.audios[p.peerId]; }
+  chatSys(p.name + ' left');
+  if (CL.role === 'host') sendMsg({t:'roster', peers: rosterList()});
+  renderCollab(); requestRender();
+}
+function rosterList(){
+  const out = [{id:CL.me.id, name:CL.me.name, color:CL.me.color, peerId:CL.myPeerId || '', host:CL.role === 'host'}];
+  for (const sid in CL.peers){
+    const p = CL.peers[sid];
+    out.push({id:sid, name:p.name, color:p.color, peerId:p.peerId || '', host:!!p.host});
+  }
+  return out;
+}
+
+/* ----------------------------------------------------------- message pump */
+function handleMsg(m, via){
+  switch (m.t){
+    case 'hello': {
+      if (CL.role !== 'host') return;
+      if (CL.passHash && m.pass !== CL.passHash){
+        sendMsg({t:'denied', to:m.from, why:'password'}, m.from);
+        chatSys(m.name + ' tried to join with the wrong password');
+        return;
+      }
+      CL.peers[m.from] = {id:m.from, name:m.name || 'Artist', color:m.color || myPeerColor(m.from),
+                          peerId:m.peerId, lastSeen:Date.now(), page:0};
+      chatSys(m.name + ' joined');
+      sendMsg({t:'welcome', to:m.from, room:CL.room, label:CL.roomLabel, peers:rosterList(),
+               project: JSON.parse(projectJSON()).project, chat: CL.chat.slice(-40)});
+      sendMsg({t:'roster', peers: rosterList()});
+      if (CL.voice && m.peerId) setTimeout(() => callPeer(m.peerId), 600);
+      renderCollab();
+      break;
+    }
+    case 'denied':
+      if (m.to !== CL.me.id) return;
+      toast(m.why === 'password' ? 'Wrong password for that room' : 'The host turned you away', 'err');
+      chatSys('Join refused: ' + (m.why === 'password' ? 'wrong password' : 'refused by host'));
+      CL.status = 'denied';
+      renderCollab();
+      setTimeout(() => { if (CL.status === 'denied') collabStop(true); }, 400);
+      break;
+    case 'welcome': {
+      if (m.to !== CL.me.id) return;
+      CL.status = 'live';
+      CL.roomLabel = m.label || CL.roomLabel;
+      applyRoster(m.peers);
+      if (m.chat) CL.chat = m.chat.concat(CL.chat);
+      CL.applying = true;
+      Promise.resolve(loadProjectData({project: m.project})).catch(err => {
+        console.warn(err); toast('Could not load the host’s book: ' + err.message, 'err');
+      }).then(() => {
+        CL.applying = false;
+        syncShadow();
+        CL.sentAssets = {};
+        Object.keys(S.P.assets).forEach(k => CL.sentAssets[k] = 1);
+        chatSys('Joined “' + CL.roomLabel + '” — you have the host’s book.');
+        renderCollab(); renderChat(); requestRender();
+      });
+      break;
+    }
+    case 'roster': applyRoster(m.peers); break;
+    case 'cur': {
+      const p = CL.peers[m.from];
+      if (!p) return;
+      p.cursor = {x:m.x, y:m.y};
+      p.page = m.page; p.tool = m.tool; p.lastSeen = Date.now();
+      requestUI();
+      break;
+    }
+    case 'chat':
+      pushChat({from:m.name || (CL.peers[m.from] && CL.peers[m.from].name) || 'Someone',
+                color:(CL.peers[m.from] && CL.peers[m.from].color) || '#999', text:m.text, ts:m.ts});
+      break;
+    case 'ops':
+      syncApply(m);
+      break;
+    case 'need': {
+      const have = [];
+      for (const id of m.ids || []){
+        const o = findAnyObject(id);
+        if (o) have.push(o);
+      }
+      if (have.length) sendMsg({t:'ops', objs:have, struct:null});
+      break;
+    }
+    case 'need-asset': {
+      const out = {};
+      for (const id of m.ids || []) if (S.P.assets[id]) out[id] = S.P.assets[id];
+      if (Object.keys(out).length) sendMsg({t:'assets', assets:out});
+      break;
+    }
+    case 'assets':
+      Object.assign(S.P.assets, m.assets || {});
+      buildAssets(); requestRender(); updateGifLoop();
+      break;
+    case 'voice': {
+      const p = CL.peers[m.from];
+      if (p){ p.voice = m.on; if (m.on && CL.voice && p.peerId) callPeer(p.peerId); }
+      renderCollab();
+      break;
+    }
+    case 'bye': dropPeer(m.from); break;
+    case 'page': {
+      const p = CL.peers[m.from];
+      if (p){ p.page = m.page; requestUI(); }
+      break;
+    }
+  }
+  void via;
+}
+function applyRoster(list){
+  const keep = {};
+  (list || []).forEach(r => {
+    if (r.id === CL.me.id) return;
+    const ex = CL.peers[r.id] || {};
+    CL.peers[r.id] = Object.assign(ex, {id:r.id, name:r.name, color:r.color || myPeerColor(r.id),
+                                        peerId:r.peerId, host:r.host, lastSeen:Date.now()});
+    keep[r.id] = 1;
+  });
+  for (const sid in CL.peers) if (!keep[sid]) delete CL.peers[sid];
+  renderCollab(); requestUI();
+}
+function findAnyObject(id){
+  for (const pg of S.P.pages) for (const L of flatLayers(pg)) for (const o of L.objects) if (o.id === id) return o;
+  return CL.pool[id] || null;
+}
+
+/* ------------------------------------------------------------- doc syncing */
+function syncSnapshot(){
+  const objsMap = {};
+  const mapNode = n => n.type === 'folder'
+    ? {id:n.id, type:'folder', name:n.name, visible:n.visible, locked:n.locked, open:n.open,
+       children:(n.children || []).map(mapNode)}
+    : {id:n.id, type:'layer', name:n.name, visible:n.visible, locked:n.locked, opacity:n.opacity,
+       noExport:n.noExport, ids:(n.objects || []).map(o => { objsMap[o.id] = JSON.stringify(o, jsonRep); return o.id; })};
+  const pages = S.P.pages.map(pg => {
+    migratePage(pg);
+    return {id:pg.id, name:pg.name, bg:pg.bg, active:pg.active, layers:pg.layers.map(mapNode)};
+  });
+  const meta = {name:S.P.name, w:S.P.w, h:S.P.h, dpi:S.P.dpi, bleed:S.P.bleed, rtl:S.P.rtl, margin:S.P.margin};
+  return {pages, meta, objsMap};
+}
+function syncShadow(){
+  const snap = syncSnapshot();
+  CL.shadow = {objs: snap.objsMap, struct: JSON.stringify({pages:snap.pages, meta:snap.meta})};
+}
+let _liveT = 0;
+function syncLive(){
+  if (!CL.on || CL.applying || CL.status !== 'live') return;
+  const now = Date.now();
+  if (now - _liveT < 70) return;
+  _liveT = now;
+  const list = selObjs();
+  if (!list.length || list.length > 24) return;
+  sendMsg({t:'ops', struct:null, objs: list.map(o => JSON.parse(JSON.stringify(o, jsonRep)))});
+}
+let _syncT = null;
+function syncPush(){
+  if (!CL.on || CL.applying || CL.status !== 'live') return;
+  clearTimeout(_syncT);
+  _syncT = setTimeout(syncPushNow, 90);
+}
+function syncPushNow(){
+  if (!CL.on || CL.applying) return;
+  const snap = syncSnapshot();
+  const prev = CL.shadow;
+  const changed = [];
+  for (const id in snap.objsMap){
+    if (!prev.objs || prev.objs[id] !== snap.objsMap[id]) changed.push(JSON.parse(snap.objsMap[id]));
+  }
+  const structJSON = JSON.stringify({pages:snap.pages, meta:snap.meta});
+  const structChanged = structJSON !== prev.struct;
+  CL.shadow = {objs: snap.objsMap, struct: structJSON};
+  if (!changed.length && !structChanged) return;
+  /* ship any asset the others cannot have seen yet */
+  const assets = {};
+  CL.sentAssets = CL.sentAssets || {};
+  for (const o of changed){
+    const aid = o.asset || o.img;
+    if (aid && S.P.assets[aid] && !CL.sentAssets[aid]){
+      assets[aid] = S.P.assets[aid];
+      CL.sentAssets[aid] = 1;
+    }
+  }
+  if (Object.keys(assets).length) sendMsg({t:'assets', assets});
+  sendMsg({t:'ops', struct: structChanged ? JSON.parse(structJSON) : null, objs: changed});
+}
+function syncApply(m){
+  CL.applying = true;
+  try {
+    (m.objs || []).forEach(o => { CL.pool[o.id] = o; });
+    if (m.struct) rebuildFromStruct(m.struct);
+    else if (m.objs) upsertObjects(m.objs);
+    S.sel = S.sel.filter(id => findObj(id));
+    syncShadow();
+    requestRender(); refreshSidebars(); updateStatus(); updateGifLoop();
+    const sig = S.P.pages.map(p2 => p2.id).join(',');
+    if (sig !== CL.pageSig){ CL.pageSig = sig; buildFilmstrip(); }
+    else updateThumb(S.cur);
+  } catch (err){
+    console.warn('sync apply failed', err);
+  } finally {
+    CL.applying = false;
+  }
+}
+function upsertObjects(list){
+  for (const nw of list){
+    let placed = false;
+    for (const pg of S.P.pages){
+      for (const L of flatLayers(pg)){
+        const i = L.objects.findIndex(o => o.id === nw.id);
+        if (i >= 0){ L.objects[i] = nw; placed = true; break; }
+      }
+      if (placed) break;
+    }
+    if (!placed) CL.pool[nw.id] = nw;
+  }
+}
+function rebuildFromStruct(st){
+  const known = {};
+  S.P.pages.forEach(pg => { migratePage(pg); pageObjects(pg).forEach(o => { known[o.id] = o; }); });
+  const missing = [], missingAssets = [];
+  const oldPages = {};
+  S.P.pages.forEach(pg => oldPages[pg.id] = pg);
+  const curId = S.P.pages[S.cur] ? S.P.pages[S.cur].id : null;
+  const mk = n => n.type === 'folder'
+    ? {id:n.id, type:'folder', name:n.name, visible:n.visible, locked:n.locked, open:n.open,
+       children:(n.children || []).map(mk)}
+    : {id:n.id, type:'layer', name:n.name, visible:n.visible, locked:n.locked, opacity:n.opacity,
+       noExport:n.noExport, objects:(n.ids || []).map(id => {
+         const o = CL.pool[id] || known[id];
+         if (!o){ missing.push(id); return null; }
+         o.layer = n.id;
+         const aid = o.asset || o.img;
+         if (aid && !S.P.assets[aid] && missingAssets.indexOf(aid) < 0) missingAssets.push(aid);
+         return o;
+       }).filter(Boolean)};
+  S.P.pages = st.pages.map(sp => {
+    const pg = oldPages[sp.id] || {id:sp.id};
+    pg.name = sp.name; pg.bg = sp.bg; pg.active = sp.active;
+    pg.layers = sp.layers.map(mk);
+    delete pg.objects;
+    return pg;
+  });
+  if (!S.P.pages.length) S.P.pages = [newPage()];
+  if (st.meta){
+    const sizeChanged = st.meta.w !== S.P.w || st.meta.h !== S.P.h;
+    Object.assign(S.P, st.meta);
+    const nameEl = $('projNameInput');
+    if (nameEl && document.activeElement !== nameEl) nameEl.value = S.P.name;
+    if (sizeChanged) resizeCanvases();
+  }
+  const idx = S.P.pages.findIndex(p => p.id === curId);
+  S.cur = idx >= 0 ? idx : clamp(S.cur, 0, S.P.pages.length - 1);
+  CL.pool = {};
+  if (missing.length) sendMsg({t:'need', ids: missing.slice(0, 400)});
+  if (missingAssets.length) sendMsg({t:'need-asset', ids: missingAssets.slice(0, 20)});
+}
+
+/* ------------------------------------------------------------- presence */
+let _curT = 0;
+function collabCursor(p){
+  if (!CL.on || CL.status !== 'live') return;
+  const now = Date.now();
+  if (now - _curT < 55) return;
+  _curT = now;
+  sendMsg({t:'cur', x: Math.round(p.x), y: Math.round(p.y), page: S.cur, tool: S.tool});
+}
+function livePeers(){
+  const out = [];
+  const now = Date.now();
+  for (const sid in CL.peers){
+    const p = CL.peers[sid];
+    out.push(Object.assign({}, p, {stale: now - (p.lastSeen || 0) > 20000}));
+  }
+  return out;
+}
+function drawPeerCursors(c, px){
+  if (!CL.on) return;
+  const now = Date.now();
+  for (const sid in CL.peers){
+    const p = CL.peers[sid];
+    if (!p.cursor || p.page !== S.cur || now - (p.lastSeen || 0) > 20000) continue;
+    const x = p.cursor.x, y = p.cursor.y;
+    c.save();
+    c.translate(x, y);
+    const k = px(1);
+    c.beginPath();
+    c.moveTo(0, 0); c.lineTo(0, 17*k); c.lineTo(4.6*k, 13.2*k); c.lineTo(7.6*k, 19.6*k);
+    c.lineTo(10.4*k, 18.2*k); c.lineTo(7.4*k, 12*k); c.lineTo(13*k, 12*k);
+    c.closePath();
+    c.fillStyle = p.color; c.fill();
+    c.lineWidth = 1.4*k; c.strokeStyle = 'rgba(255,255,255,.95)'; c.stroke();
+    const label = p.name;
+    c.font = '600 ' + (11*k) + 'px "IBM Plex Mono",monospace';
+    const w = c.measureText(label).width + 12*k;
+    c.beginPath();
+    if (c.roundRect) c.roundRect(14*k, 14*k, w, 18*k, 5*k);
+    else c.rect(14*k, 14*k, w, 18*k);
+    c.fillStyle = p.color; c.fill();
+    c.fillStyle = '#0e0e13';
+    c.textBaseline = 'middle'; c.textAlign = 'left';
+    c.fillText(label, 20*k, 23.5*k);
+    c.restore();
+  }
+}
+
+/* ----------------------------------------------------------------- chat */
+function pushChat(m){
+  CL.chat.push(m);
+  if (CL.chat.length > 300) CL.chat.shift();
+  if (!CL.chatOpen){ CL.unread++; renderCollab(); }
+  renderChat();
+}
+function chatSys(text){ pushChat({sys:true, text, ts:Date.now()}); }
+function sendChat(){
+  const inp = $('chatText');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+  if (!CL.on){ toast('Open a room first'); return; }
+  pushChat({from:CL.me.name, color:CL.me.color, text, ts:Date.now(), mine:true});
+  sendMsg({t:'chat', text, name:CL.me.name, ts:Date.now()});
+}
+function renderChat(){
+  const log = $('chatLog');
+  if (!log) return;
+  log.innerHTML = '';
+  CL.chat.slice(-120).forEach(m => {
+    const d = el('div', 'chat-msg' + (m.sys ? ' sys' : ''));
+    if (m.sys) d.textContent = m.text;
+    else {
+      const b = el('b', '', m.from + ': ');
+      b.style.color = m.color || 'var(--yellow)';
+      d.appendChild(b);
+      d.appendChild(document.createTextNode(m.text));
+    }
+    log.appendChild(d);
+  });
+  log.scrollTop = log.scrollHeight;
+  const rm = $('chatRoom');
+  if (rm) rm.textContent = CL.on ? CL.roomLabel : '';
+}
+function toggleChat(force){
+  CL.chatOpen = force == null ? !CL.chatOpen : force;
+  $('chatDock').classList.toggle('hide', !CL.chatOpen);
+  if (CL.chatOpen){ CL.unread = 0; renderChat(); setTimeout(() => $('chatText').focus(), 30); }
+  renderCollab();
+}
+
+/* ---------------------------------------------------------------- voice */
+async function startVoice(){
+  if (!CL.online){ toast('Voice needs the online room — same-machine rooms are data only', 'err'); return; }
+  try {
+    CL.localStream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true, noiseSuppression:true, autoGainControl:true}});
+  } catch (err){
+    toast('Microphone blocked: ' + (err.message || err), 'err');
+    return;
+  }
+  CL.voice = true; CL.muted = false;
+  meterFor('me', CL.localStream);
+  livePeers().forEach(p => { if (p.peerId) callPeer(p.peerId); });
+  sendMsg({t:'voice', on:true});
+  chatSys('You joined voice chat');
+  renderCollab();
+}
+function callPeer(peerId){
+  if (!CL.peer || !CL.localStream || CL.calls[peerId]) return;
+  try {
+    const call = CL.peer.call(peerId, CL.localStream);
+    if (!call) return;
+    CL.calls[peerId] = call;
+    call.on('stream', rs => attachRemoteAudio(peerId, rs));
+    call.on('close', () => { delete CL.calls[peerId]; });
+  } catch (err){ console.warn('call failed', err); }
+}
+function attachRemoteAudio(peerId, stream){
+  let a = CL.audios[peerId];
+  if (!a){
+    a = document.createElement('audio');
+    a.autoplay = true; a.style.display = 'none';
+    document.body.appendChild(a);
+    CL.audios[peerId] = a;
+  }
+  a.srcObject = stream;
+  a.play().catch(() => {});
+  meterFor(peerId, stream);
+}
+function meterFor(key, stream){
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    CL.actx = CL.actx || new AC();
+    const src = CL.actx.createMediaStreamSource(stream);
+    const an = CL.actx.createAnalyser();
+    an.fftSize = 512;
+    src.connect(an);
+    CL.meters[key] = {an, data: new Uint8Array(an.frequencyBinCount)};
+    if (!CL.meterTimer) CL.meterTimer = setInterval(pollMeters, 220);
+  } catch (err){}
+}
+function pollMeters(){
+  let changed = false;
+  for (const key in CL.meters){
+    const m = CL.meters[key];
+    m.an.getByteFrequencyData(m.data);
+    let sum = 0;
+    for (let i = 0; i < m.data.length; i++) sum += m.data[i];
+    const level = sum / m.data.length;
+    const talking = level > 12;
+    if (m.talking !== talking){ m.talking = talking; changed = true; }
+  }
+  if (changed) renderCollab();
+}
+function stopVoice(){
+  CL.voice = false;
+  for (const k in CL.calls){ try { CL.calls[k].close(); } catch (e){} }
+  CL.calls = {};
+  for (const k in CL.audios){ CL.audios[k].remove(); }
+  CL.audios = {};
+  if (CL.localStream){ CL.localStream.getTracks().forEach(t => t.stop()); CL.localStream = null; }
+  CL.meters = {};
+  if (CL.meterTimer){ clearInterval(CL.meterTimer); CL.meterTimer = null; }
+  if (CL.on) sendMsg({t:'voice', on:false});
+  renderCollab();
+}
+function toggleMute(){
+  if (!CL.localStream) return;
+  CL.muted = !CL.muted;
+  CL.localStream.getAudioTracks().forEach(t => t.enabled = !CL.muted);
+  renderCollab();
+}
+
+/* ------------------------------------------------------------------- UI */
+function initials(n){
+  const parts = String(n || '?').trim().split(/\s+/);
+  return ((parts[0] || '?')[0] + (parts[1] ? parts[1][0] : '')).toUpperCase();
+}
+function renderCollab(){
+  const btn = $('collabBtn'), dot = $('collabDot'), lab = $('collabLabel');
+  if (btn){
+    btn.classList.toggle('live', CL.on && CL.status === 'live');
+    btn.classList.toggle('connecting', CL.on && CL.status === 'connecting');
+    const n = livePeers().length;
+    lab.textContent = CL.on ? (n + 1) + ' HERE' + (CL.unread ? ' · ' + CL.unread : '') : 'COLLAB';
+    void dot;
+  }
+  const strip = $('presence');
+  if (strip){
+    strip.innerHTML = '';
+    if (CL.on){
+      const all = [{id:CL.me.id, name:CL.me.name + ' (you)', color:CL.me.color, me:true, page:S.cur}].concat(livePeers());
+      all.forEach(p => {
+        const c = el('div', 'pchip' + ((CL.meters[p.me ? 'me' : p.peerId] || {}).talking ? ' talking' : ''));
+        const i = el('i', '', initials(p.name));
+        i.style.background = p.color;
+        c.appendChild(i);
+        c.appendChild(document.createTextNode(p.name));
+        if (!p.me && p.page != null && p.page !== S.cur){
+          const g = el('span', 'pg', 'p' + (p.page + 1));
+          g.title = 'Working on page ' + (p.page + 1) + ' — click to follow';
+          c.style.cursor = 'pointer';
+          c.onclick = () => gotoPage(p.page);
+          c.appendChild(g);
+        }
+        if (p.voice || (p.me && CL.voice)) c.appendChild(document.createTextNode(CL.muted && p.me ? ' 🔇' : ' 🎤'));
+        strip.appendChild(c);
+      });
+    }
+  }
+  const mic = $('chatMicBtn');
+  if (mic) mic.classList.toggle('on', CL.voice && !CL.muted);
+  if ($('mCollab').classList.contains('show')) buildCollabModal();
+}
+function openCollab(){
+  buildCollabModal();
+  showModal('mCollab');
+}
+function buildCollabModal(){
+  const host = $('collabBody');
+  if (!host) return;
+  host.innerHTML = '';
+  const saved = localStorage.getItem('inkforge.name') || '';
+  if (!CL.on){
+    host.appendChild(el('div', 'slbl', 'Your name'));
+    const nm = el('input', 'mi-input');
+    nm.id = 'clName';
+    nm.value = saved;
+    nm.placeholder = 'What should everyone call you?';
+    nm.maxLength = 22;
+    host.appendChild(nm);
+
+    const tabs = el('div', 'tab-bar');
+    tabs.style.marginTop = '18px';
+    const mode = CL.uiMode || 'host';
+    [['host', 'Create a room'], ['join', 'Join a room']].forEach(([id, n]) => {
+      const d = el('div', id === mode ? 'active' : '', n);
+      d.onclick = () => { CL.uiMode = id; buildCollabModal(); };
+      tabs.appendChild(d);
+    });
+    host.appendChild(tabs);
+
+    host.appendChild(el('div', 'slbl', mode === 'host' ? 'Room name' : 'Room code'));
+    const rm = el('input', 'mi-input');
+    rm.id = 'clRoom';
+    rm.value = CL.lastRoom || '';
+    rm.placeholder = mode === 'host' ? 'The Batcave' : 'the-batcave';
+    host.appendChild(rm);
+    host.appendChild(el('div', 'slbl', 'Password ' + (mode === 'host' ? '(optional)' : '(if the room has one)')));
+    const pw = el('input', 'mi-input');
+    pw.id = 'clPass';
+    pw.type = 'text';
+    pw.placeholder = mode === 'host' ? 'Leave empty for an open room' : '';
+    host.appendChild(pw);
+
+    const go = el('button', 'btn-prim', mode === 'host' ? 'OPEN THE ROOM →' : 'JOIN →');
+    go.style.cssText = 'width:100%;margin-top:18px;padding:12px';
+    go.onclick = () => {
+      const name = nm.value.trim() || 'Artist';
+      const roomRaw = rm.value.trim();
+      if (!roomRaw){ toast('Give the room a name first', 'err'); rm.focus(); return; }
+      CL.lastRoom = roomRaw;
+      collabStart({role: mode, name, room: slugRoom(roomRaw), label: roomRaw, pass: pw.value});
+    };
+    host.appendChild(go);
+    const note = el('div', 'note');
+    note.style.marginTop = '16px';
+    note.innerHTML = mode === 'host'
+      ? 'Everyone who joins gets a copy of <b>this book</b> and edits it with you live — cursors, pages, panels, ' +
+        'lettering, the lot. Tabs on this computer can always join; other computers need the internet. ' +
+        'The password keeps people out by accident, it is not encryption.'
+      : '<b>Joining loads the host’s book</b> and replaces whatever you have open here, so save your own work first ' +
+        '(File → Save Project) if you need it.';
+    host.appendChild(note);
+    return;
+  }
+  /* connected */
+  host.appendChild(el('div', 'slbl', CL.role === 'host' ? 'Share this code' : 'Room'));
+  const code = el('div', 'room-code', CL.room);
+  code.title = 'Click to copy';
+  code.onclick = () => {
+    if (navigator.clipboard) navigator.clipboard.writeText(CL.room).then(() => toast('Room code copied', 'ok'), () => {});
+  };
+  host.appendChild(code);
+  const st = el('div', 'note');
+  st.style.marginTop = '12px';
+  st.innerHTML = CL.status === 'live'
+    ? (CL.online ? 'Live over the internet' : 'Live on this computer only (no internet — other tabs can join)') +
+      ' · ' + (livePeers().length + 1) + ' in the room'
+    : CL.status === 'connecting' ? 'Connecting…'
+    : CL.status === 'denied' ? 'That password was refused.'
+    : 'Connection lost — the host may have closed InkForge.';
+  host.appendChild(st);
+
+  host.appendChild(el('div', 'slbl', 'In the room'));
+  const list = el('div');
+  list.style.cssText = 'display:flex;flex-direction:column;gap:6px';
+  [{id:CL.me.id, name:CL.me.name + ' (you)', color:CL.me.color, host:CL.role === 'host', me:true}]
+    .concat(livePeers()).forEach(p => {
+    const r = el('div', 'peer-row');
+    const i = el('i', '', initials(p.name));
+    i.style.background = p.color;
+    r.appendChild(i);
+    r.appendChild(el('span', '', p.name));
+    const tag = el('span', 'tag', (p.host ? 'host' : '') + (p.voice || (p.me && CL.voice) ? ' 🎤' : '') + (p.stale ? ' idle' : ''));
+    r.appendChild(tag);
+    list.appendChild(r);
+  });
+  host.appendChild(list);
+
+  host.appendChild(el('div', 'slbl', 'Talking'));
+  const row = el('div', 'grid3');
+  const vb = el('button', 'mini-btn' + (CL.voice ? ' active' : ''), CL.voice ? '🎤 Voice on' : '🎤 Voice off');
+  vb.onclick = () => { CL.voice ? stopVoice() : startVoice(); };
+  const mb = el('button', 'mini-btn' + (CL.muted ? ' active' : ''), CL.muted ? '🔇 Muted' : '🔈 Mute');
+  mb.onclick = toggleMute;
+  const cb = el('button', 'mini-btn' + (CL.chatOpen ? ' active' : ''), '💬 Chat' + (CL.unread ? ' (' + CL.unread + ')' : ''));
+  cb.onclick = () => toggleChat();
+  row.appendChild(vb); row.appendChild(mb); row.appendChild(cb);
+  host.appendChild(row);
+
+  const leave = el('button', 'btn-sec', 'Leave the room');
+  leave.style.cssText = 'width:100%;margin-top:16px';
+  leave.onclick = () => { collabStop(); closeModal('mCollab'); };
+  host.appendChild(leave);
+}
+
+/* ============================================================================
+   PRINT SHOP KIT — trim sizes, title pages and cover wraps
+   ============================================================================ */
+const PRINT_SHOPS = [
+  {co:'Amazon KDP', items:[
+    {n:'Comic book', w:6.625, h:10.25, bleed:0.125},
+    {n:'US trade', w:6, h:9, bleed:0.125},
+    {n:'Digest', w:5.5, h:8.5, bleed:0.125},
+    {n:'US letter', w:8.5, h:11, bleed:0.125},
+    {n:'A5', w:5.83, h:8.27, bleed:0.125},
+  ]},
+  {co:'IngramSpark', items:[
+    {n:'US trade', w:6, h:9, bleed:0.125},
+    {n:'Comic / graphic novel', w:6.625, h:10.25, bleed:0.125},
+    {n:'Crown quarto', w:7, h:10, bleed:0.125},
+    {n:'US letter', w:8.5, h:11, bleed:0.125},
+  ]},
+  {co:'Lulu', items:[
+    {n:'US comic', w:6.625, h:10.25, bleed:0.125},
+    {n:'Digest', w:5.5, h:8.5, bleed:0.125},
+    {n:'US letter', w:8.5, h:11, bleed:0.125},
+    {n:'Square', w:8.5, h:8.5, bleed:0.125},
+  ]},
+  {co:'Mixam & comic printers', items:[
+    {n:'US comic', w:6.625, h:10.25, bleed:0.125},
+    {n:'A4', w:8.27, h:11.69, bleed:0.118},
+    {n:'A5', w:5.83, h:8.27, bleed:0.118},
+    {n:'Square 210mm', w:8.27, h:8.27, bleed:0.118},
+  ]},
+];
+const PAPER_STOCK = [
+  {id:'white',  n:'Black & white on white', t:0.002252},
+  {id:'cream',  n:'Black & white on cream', t:0.0025},
+  {id:'color',  n:'Colour, standard paper', t:0.002347},
+  {id:'colorp', n:'Colour, premium paper',  t:0.002252},
+];
+const PK = {title:'', subtitle:'', author:'', publisher:'', year:String(new Date().getFullYear()),
+            style:'comic', pages:32, paper:'white', shop:0, size:0};
+
+function openPrintKit(tab){
+  if (!PK.title) PK.title = S.P.name || 'My Comic';
+  showPrintTab(tab || 'title');
+  showModal('mPrint');
+}
+function showPrintTab(tab){
+  PK.tab = tab;
+  $$('#printTabs div').forEach(d => d.classList.toggle('active', d.dataset.ptab === tab));
+  const host = $('printBody');
+  host.innerHTML = '';
+  if (tab === 'title') printTabTitle(host);
+  else if (tab === 'cover') printTabCover(host);
+  else printTabSizes(host);
+}
+function pkField(host, label, key, ph){
+  const w = el('div');
+  w.appendChild(el('div', 'field-lbl', label));
+  const i = el('input', 'mi-input');
+  i.value = PK[key] || ''; i.placeholder = ph || '';
+  i.oninput = () => { PK[key] = i.value; };
+  w.appendChild(i);
+  host.appendChild(w);
+  return i;
+}
+function printTabTitle(host){
+  const lbl = el('div', 'slbl', 'Book details');
+  host.appendChild(lbl);
+  const g = el('div', 'inp-row');
+  host.appendChild(g);
+  pkField(g, 'TITLE', 'title', 'The Midnight Run');
+  pkField(g, 'SUBTITLE', 'subtitle', 'Book One');
+  const g2 = el('div', 'inp-row');
+  g2.style.marginTop = '9px';
+  host.appendChild(g2);
+  pkField(g2, 'AUTHOR', 'author', 'Your name');
+  pkField(g2, 'PUBLISHER', 'publisher', 'Self-published');
+  pkField(g2, 'YEAR', 'year', '');
+  host.appendChild(el('div', 'slbl', 'Style'));
+  const st = el('div', 'row');
+  st.style.flexWrap = 'wrap';
+  [['comic', 'Comic'], ['classic', 'Classic'], ['minimal', 'Minimal'], ['manga', 'Manga']].forEach(([id, n]) => {
+    const b = el('div', 'chip' + (PK.style === id ? ' active' : ''), n);
+    b.onclick = () => { PK.style = id; showPrintTab('title'); };
+    st.appendChild(b);
+  });
+  host.appendChild(st);
+  host.appendChild(el('div', 'slbl', 'Add to the book'));
+  const row = el('div', 'row');
+  row.style.gap = '9px';
+  const b1 = el('button', 'btn-prim', 'ADD TITLE PAGE');
+  b1.onclick = () => { makeTitlePage(true); closeModal('mPrint'); };
+  const b2 = el('button', 'btn-sec', 'Add after current page');
+  b2.onclick = () => { makeTitlePage(false); closeModal('mPrint'); };
+  const b3 = el('button', 'btn-sec', '+ Copyright page');
+  b3.onclick = () => { makeCopyrightPage(); closeModal('mPrint'); };
+  row.appendChild(b1); row.appendChild(b2); row.appendChild(b3);
+  host.appendChild(row);
+  const note = el('div', 'note');
+  note.style.marginTop = '14px';
+  note.innerHTML = 'A title page (and the copyright page printers ask for) is added as a real editable page at your ' +
+    'current size — <b>' + S.P.w + ' × ' + S.P.h + '</b> units, ' + (S.P.w/UNIT_DPI).toFixed(2) + ' × ' +
+    (S.P.h/UNIT_DPI).toFixed(2) + ' in. Export the book as PDF and it goes to the printer with everything else.';
+  host.appendChild(note);
+}
+function printTabCover(host){
+  host.appendChild(el('div', 'slbl', 'Trim size'));
+  const shop = el('select', 'mi-input');
+  PRINT_SHOPS.forEach((sh, i) => { const o = el('option', '', sh.co); o.value = i; shop.appendChild(o); });
+  shop.value = PK.shop;
+  const size = el('select', 'mi-input');
+  const fillSizes = () => {
+    size.innerHTML = '';
+    PRINT_SHOPS[PK.shop].items.forEach((it, i) => {
+      const o = el('option', '', it.n + ' — ' + it.w + ' × ' + it.h + ' in');
+      o.value = i; size.appendChild(o);
+    });
+    size.value = Math.min(PK.size, PRINT_SHOPS[PK.shop].items.length - 1);
+  };
+  fillSizes();
+  shop.onchange = () => { PK.shop = +shop.value; PK.size = 0; showPrintTab('cover'); };
+  size.onchange = () => { PK.size = +size.value; showPrintTab('cover'); };
+  const r1 = el('div', 'inp-row');
+  const c1 = el('div'); c1.appendChild(el('div', 'field-lbl', 'PRINTER')); c1.appendChild(shop);
+  const c2 = el('div'); c2.appendChild(el('div', 'field-lbl', 'SIZE')); c2.appendChild(size);
+  r1.appendChild(c1); r1.appendChild(c2);
+  host.appendChild(r1);
+
+  host.appendChild(el('div', 'slbl', 'Spine'));
+  const r2 = el('div', 'inp-row');
+  const c3 = el('div');
+  c3.appendChild(el('div', 'field-lbl', 'PAGE COUNT'));
+  const pc = el('input', 'mi-input'); pc.type = 'number'; pc.min = 4; pc.max = 1000; pc.value = PK.pages;
+  pc.oninput = () => { PK.pages = clamp(parseInt(pc.value, 10) || 32, 4, 1000); updateCoverCalc(); };
+  c3.appendChild(pc);
+  const c4 = el('div');
+  c4.appendChild(el('div', 'field-lbl', 'PAPER'));
+  const pp = el('select', 'mi-input');
+  PAPER_STOCK.forEach(x => { const o = el('option', '', x.n); o.value = x.id; pp.appendChild(o); });
+  pp.value = PK.paper;
+  pp.onchange = () => { PK.paper = pp.value; updateCoverCalc(); };
+  c4.appendChild(pp);
+  const c5 = el('div');
+  c5.appendChild(el('div', 'field-lbl', 'USE THIS BOOK'));
+  const ub = el('button', 'btn-sec', 'Use ' + S.P.pages.length + ' pages');
+  ub.style.width = '100%';
+  ub.onclick = () => { PK.pages = Math.max(4, S.P.pages.length); showPrintTab('cover'); };
+  c5.appendChild(ub);
+  r2.appendChild(c3); r2.appendChild(c4); r2.appendChild(c5);
+  host.appendChild(r2);
+
+  host.appendChild(el('div', 'slbl', 'Cover text'));
+  const r3 = el('div', 'inp-row');
+  pkField(r3, 'TITLE', 'title', 'The Midnight Run');
+  pkField(r3, 'AUTHOR', 'author', 'Your name');
+  host.appendChild(r3);
+
+  const calc = el('div', 'note');
+  calc.id = 'coverCalc';
+  calc.style.marginTop = '14px';
+  host.appendChild(calc);
+  const row = el('div', 'row');
+  row.style.cssText = 'gap:9px;margin-top:14px;flex-wrap:wrap';
+  const save = el('button', 'btn-sec', '💾 Save this book first');
+  save.onclick = () => saveProjectFile();
+  const mk = el('button', 'btn-prim', 'CREATE COVER PROJECT →');
+  mk.onclick = () => makeCoverWrap();
+  row.appendChild(save); row.appendChild(mk);
+  host.appendChild(row);
+  updateCoverCalc();
+}
+function coverDims(){
+  const it = PRINT_SHOPS[PK.shop].items[Math.min(PK.size, PRINT_SHOPS[PK.shop].items.length - 1)];
+  const stock = PAPER_STOCK.find(x => x.id === PK.paper) || PAPER_STOCK[0];
+  const spine = PK.pages * stock.t;
+  const bleed = it.bleed;
+  return {
+    it, stock, spine, bleed,
+    wIn: it.w * 2 + spine + bleed * 2,
+    hIn: it.h + bleed * 2,
+  };
+}
+function updateCoverCalc(){
+  const d = coverDims(), box = $('coverCalc');
+  if (!box) return;
+  box.innerHTML = '<b>Spine:</b> ' + d.spine.toFixed(3) + ' in (' + (d.spine * 25.4).toFixed(1) + ' mm) · ' +
+    PK.pages + ' pages on ' + d.stock.n.toLowerCase() + '<br>' +
+    '<b>Full wrap:</b> ' + d.wIn.toFixed(3) + ' × ' + d.hIn.toFixed(3) + ' in including ' + d.bleed + '" bleed all round · ' +
+    Math.round(d.wIn * 300) + ' × ' + Math.round(d.hIn * 300) + ' px at 300 dpi<br>' +
+    '<b>Layout:</b> back cover · spine · front cover, with barcode and safe-area guides on their own layer that ' +
+    'is excluded from export.';
+}
+function guideRect(pg, layer, x, y, w, h, label, color){
+  addToPage(pg, mkObj('shape', {kind:'rect', x, y, w, h, fill:'none', stroke:color || '#4C9BFF', strokeW:2, dash:'dash'}), layer);
+  if (label) addToPage(pg, mkObj('text', {
+    text:label, x:x + 8, y:y + 8, w:Math.max(60, w - 16), h:26, font:"'IBM Plex Mono',monospace",
+    fontSize:13, color:color || '#4C9BFF', align:'left', autoFit:false, pad:0,
+  }), layer);
+}
+function makeCoverWrap(){
+  const d = coverDims();
+  if (pageObjCount(page()) && !confirm('This replaces what is open with a new cover project. Continue?\n\n(Cancel and use “Save this book first” if you have not saved.)')) return;
+  const W = Math.round(d.wIn * UNIT_DPI), H = Math.round(d.hIn * UNIT_DPI);
+  const bleed = Math.round(d.bleed * UNIT_DPI);
+  const trimW = Math.round(d.it.w * UNIT_DPI), spine = d.spine * UNIT_DPI;
+  S.P = newProject({name:(PK.title || 'Cover') + ' — cover wrap', w:W, h:H, dpi:300, bleed});
+  S.P.margin = Math.round(0.25 * UNIT_DPI);
+  const pg = newPage();
+  S.P.pages.push(pg);
+  const art = pg.layers[0];
+  art.name = 'Cover art';
+  const guides = newLayer('Guides — not exported');
+  guides.locked = true; guides.noExport = true;
+  pg.layers.push(guides);
+  pg.active = art.id;
+  S.cur = 0; S.sel = [];
+
+  const backX = bleed, spineX = bleed + trimW, frontX = bleed + trimW + spine;
+  guideRect(pg, guides, bleed, bleed, W - bleed*2, H - bleed*2, 'TRIM', '#F2264B');
+  guideRect(pg, guides, backX, bleed, trimW, H - bleed*2, 'BACK COVER');
+  guideRect(pg, guides, spineX, bleed, spine, H - bleed*2, spine > 60 ? 'SPINE' : '', '#A97BFF');
+  guideRect(pg, guides, frontX, bleed, trimW, H - bleed*2, 'FRONT COVER');
+  const safe = Math.round(0.25 * UNIT_DPI);
+  guideRect(pg, guides, frontX + safe, bleed + safe, trimW - safe*2, H - bleed*2 - safe*2, 'SAFE AREA', '#28D07B');
+  guideRect(pg, guides, backX + trimW - Math.round(2.2*UNIT_DPI) - safe, H - bleed - safe - Math.round(1.4*UNIT_DPI),
+            Math.round(2.2*UNIT_DPI), Math.round(1.4*UNIT_DPI), 'BARCODE', '#FFD814');
+
+  addToPage(pg, mkObj('text', {
+    text: PK.title || 'TITLE', x: frontX + safe, y: bleed + H*0.12, w: trimW - safe*2, h: H*0.2,
+    font:"'Bangers',cursive", fontSize: Math.round(trimW*0.16), color:'#111', align:'center', autoFit:true, pad:0,
+  }), art);
+  addToPage(pg, mkObj('text', {
+    text: PK.author || 'Your name', x: frontX + safe, y: H - bleed - safe - H*0.12, w: trimW - safe*2, h: H*0.07,
+    font:"'Oswald',sans-serif", fontSize: Math.round(trimW*0.055), color:'#111', align:'center', autoFit:true, pad:0,
+  }), art);
+  if (spine > 26) addToPage(pg, mkObj('text', {
+    text: (PK.title || 'TITLE') + '   ·   ' + (PK.author || ''), x: spineX - H*0.3, y: H/2 - spine/2,
+    w: H*0.6 + spine, h: spine, rot: -Math.PI/2,
+    font:"'Oswald',sans-serif", fontSize: Math.round(spine*0.55), color:'#111', align:'center', autoFit:true, pad:2,
+  }), art);
+  addToPage(pg, mkObj('text', {
+    text:'Back-cover blurb goes here.', x: backX + safe, y: bleed + H*0.14, w: trimW - safe*2, h: H*0.3,
+    font:"'Lora',serif", fontSize: Math.round(trimW*0.045), color:'#111', align:'left', vAlign:'top', autoFit:true, pad:0,
+  }), art);
+
+  S.hist = {stack:[], idx:-1};
+  pushHist('Cover wrap');
+  $('projNameInput').value = S.P.name;
+  closeModal('mPrint');
+  resizeCanvases(); fitView(); buildFilmstrip(); buildAssets(); refreshSidebars(); updateStatus(); requestRender();
+  toast('Cover wrap created — spine ' + d.spine.toFixed(3) + ' in. Export as PDF at 300 dpi with bleed.', 'ok');
+}
+function titleStyleFonts(){
+  switch (PK.style){
+    case 'classic': return {t:"'Cinzel',serif", s:"'Lora',serif", rule:true};
+    case 'minimal': return {t:"'Oswald',sans-serif", s:"'Nunito',sans-serif", rule:false};
+    case 'manga':   return {t:"'Anton',sans-serif", s:"'Oswald',sans-serif", rule:true};
+    default:        return {t:"'Bangers',cursive", s:"'Comic Neue',cursive", rule:false};
+  }
+}
+function makeTitlePage(front){
+  const f = titleStyleFonts(), W = S.P.w, H = S.P.h, m = Math.max(S.P.margin || 0, Math.min(W, H) * 0.1);
+  const pg = newPage('Title');
+  pg.layers[0].name = 'Title page';
+  const T = (text, y, h, size, font, align) => addToPage(pg, mkObj('text', {
+    text, x:m, y, w:W - m*2, h, font, fontSize:size, color:'#111', align: align || 'center', autoFit:true, pad:0, lineHeight:1.25,
+  }));
+  T(PK.title || S.P.name || 'TITLE', H*0.26, H*0.16, W*0.13, f.t);
+  if (PK.subtitle) T(PK.subtitle, H*0.45, H*0.06, W*0.042, f.s);
+  if (f.rule) addToPage(pg, mkObj('shape', {kind:'line', x:W*0.3, y:H*0.55, w:W*0.4, h:0, stroke:'#111', strokeW:2}));
+  if (PK.author) T((PK.style === 'classic' ? 'by ' : '') + PK.author, H*0.68, H*0.06, W*0.05, f.s);
+  if (PK.publisher) T(PK.publisher, H*0.86, H*0.04, W*0.03, f.s);
+  const at = front ? 0 : S.cur + 1;
+  S.P.pages.splice(at, 0, pg);
+  S.cur = at; S.sel = [];
+  pushHist('Title page');
+  buildFilmstrip(); requestRender(); updateStatus(); refreshSidebars();
+  toast('Title page added', 'ok');
+}
+function makeCopyrightPage(){
+  const W = S.P.w, H = S.P.h, m = Math.max(S.P.margin || 0, Math.min(W, H) * 0.1);
+  const pg = newPage('Copyright');
+  pg.layers[0].name = 'Copyright';
+  const body = (PK.title || S.P.name || 'This book') + '\n\nCopyright © ' + (PK.year || new Date().getFullYear()) +
+    ' ' + (PK.author || 'Your name') + '\n\nAll rights reserved. No part of this publication may be reproduced, ' +
+    'distributed or transmitted in any form without the prior written permission of the publisher, except for brief ' +
+    'quotations in a review.\n\nThis is a work of fiction. Names, characters and incidents are the product of the ' +
+    "author's imagination.\n\n" + (PK.publisher || 'Self-published') + '\n\nFirst edition, ' + (PK.year || new Date().getFullYear()) +
+    '\n\nISBN: ___-_-____-____-_';
+  addToPage(pg, mkObj('text', {
+    text: body, x:m, y:H*0.3, w:W - m*2, h:H*0.6, font:"'Lora',serif", fontSize:W*0.024,
+    color:'#111', align:'left', vAlign:'top', autoFit:true, pad:0, lineHeight:1.5,
+  }));
+  const at = Math.min(S.cur + 1, S.P.pages.length);
+  S.P.pages.splice(at, 0, pg);
+  S.cur = at; S.sel = [];
+  pushHist('Copyright page');
+  buildFilmstrip(); requestRender(); updateStatus(); refreshSidebars();
+  toast('Copyright page added', 'ok');
+}
+function printTabSizes(host){
+  host.appendChild(el('div', 'slbl', 'Apply a printer trim size to this project'));
+  PRINT_SHOPS.forEach(sh => {
+    const h = el('div', 'slbl', sh.co);
+    h.style.margin = '14px 0 6px';
+    host.appendChild(h);
+    const g = el('div', 'grid2');
+    sh.items.forEach(it => {
+      const b = el('button', 'mini-btn', it.n + ' · ' + it.w + ' × ' + it.h + '"');
+      b.title = 'Sets the page size to ' + Math.round(it.w*UNIT_DPI) + ' × ' + Math.round(it.h*UNIT_DPI) +
+                ' units with ' + it.bleed + '" bleed';
+      b.onclick = () => {
+        const w = Math.round(it.w * UNIT_DPI), hh = Math.round(it.h * UNIT_DPI);
+        const scale = confirm('Set every page to ' + it.n + ' (' + it.w + ' × ' + it.h + ' in)?\n\nOK = scale the artwork to fit, Cancel = keep artwork at its current size.');
+        const sx = w / S.P.w, sy = hh / S.P.h;
+        if (scale) S.P.pages.forEach(pg => pageObjects(pg).forEach(o => scaleObj(o, sx, sy, 0, 0)));
+        S.P.w = w; S.P.h = hh;
+        S.P.bleed = Math.round(it.bleed * UNIT_DPI);
+        S.P.dpi = 300;
+        S.P.margin = Math.round(Math.min(w, hh) * 0.055);
+        pushHist('Trim size');
+        resizeCanvases(); fitView(); buildFilmstrip(); requestRender(); updateStatus();
+        closeModal('mPrint');
+        toast(sh.co + ' ' + it.n + ' applied — ' + it.bleed + '" bleed set', 'ok');
+      };
+      g.appendChild(b);
+    });
+    host.appendChild(g);
+  });
+  const note = el('div', 'note');
+  note.style.marginTop = '16px';
+  note.innerHTML = 'These set the page size <b>and</b> the bleed. At export, tick <b>Include bleed area</b> and ' +
+    '<b>Crop marks</b>, choose 300 dpi, and upload the PDF as your interior. Build the cover separately on the ' +
+    '<b>Cover wrap</b> tab — printers want the cover as its own file.';
+  host.appendChild(note);
+}
+$$('#printTabs div').forEach(d => d.onclick = () => showPrintTab(d.dataset.ptab));
+
 /* ------------------------------------------------------------------- help */
 const HELP = {
   start: '<b style="color:var(--yellow)">1 · Set up the page.</b> File → New Project. Pick a real print size — InkForge stores page units, so the same project exports at 150, 300 or 600 dpi with no loss.<br><br>' +
@@ -5892,17 +7863,64 @@ const HELP = {
     '<b style="color:var(--yellow)">3 · Draw.</b> Pen, pencil, brush, marker and a calligraphic nib. Strokes are stored as vectors, so they stay sharp at any export size. The Smooth slider stabilises shaky lines.<br><br>' +
     '<b style="color:var(--yellow)">4 · Letter it.</b> Press S, drag a balloon, type. Double-click any balloon to re-letter it; drag the red dot to aim the tail at whoever is speaking.<br><br>' +
     '<b style="color:var(--yellow)">5 · Add impact.</b> X drops SFX word art (arch, jitter, lean, layered outlines). W adds speed lines, focus lines, screentone, rain, sparkles and splatter.<br><br>' +
+    '<b style="color:var(--yellow)">5½ · Work with other people.</b> COLLAB opens a room — share the code and their cursors, ' +
+    'edits, chat and voice arrive live on your page.<br><br>' +
     '<b style="color:var(--yellow)">6 · Export.</b> Ctrl+E → PDF at up to 600 dpi with bleed and crop marks, PNG/JPG pages, a ZIP, or one tall webtoon strip. Save the .inkforge file to keep everything editable.',
   bubbles: '<b style="color:var(--yellow)">16 balloon types.</b> Speech, rounded, box, thought, cloud, shout, scream, burst, whisper, wobble, radio, telepathy, double, caption, banner and icicle.<br><br>' +
     '<b style="color:var(--yellow)">Tails are welded into the outline.</b> The tail is spliced into the balloon’s own path, so fill and ink are one continuous shape — no seam line cutting across the balloon. Curved, straight, puffed, dashed and zigzag tails all work on every balloon type, and you can add as many tails as you have speakers.<br><br>' +
     '<b style="color:var(--yellow)">Lettering that fits.</b> Text auto-shrinks to stay inside the balloon, with control over font, size, leading, tracking and alignment. “Fit bubble to text” reflows the balloon around the words instead.<br><br>' +
     '<b style="color:var(--yellow)">Everything stays editable.</b> Bubbles are objects — move, rotate, restyle or re-letter them at any time, even after export.',
+  together: '<b style="color:var(--yellow)">Open a room.</b> Hit <b>COLLAB</b> in the top bar, type the name everyone should see you as, ' +
+    'give the room a name and (if you want) a password — anything you like. You get a short room code to share.<br><br>' +
+    '<b style="color:var(--yellow)">Joining.</b> The other person hits COLLAB → Join a room, types the code, the password and their name. ' +
+    'They receive your book as it stands and edit it with you from then on. Joining replaces whatever they had open, so tell them ' +
+    'to save first (File → Save Project) if it matters.<br><br>' +
+    '<b style="color:var(--yellow)">Cursors.</b> Everyone’s pointer shows up on everyone’s screen with their name on it, in their own colour. ' +
+    'The chips in the top-right corner say who is here; if someone is on another page it shows <b>p3</b> next to their name — click it to jump there.<br><br>' +
+    '<b style="color:var(--yellow)">Chat.</b> Press <b>C</b>, or the 💬 button in the room panel. Messages are room-wide.<br><br>' +
+    '<b style="color:var(--yellow)">Voice.</b> Turn on 🎤 Voice in the room panel; your browser will ask for the microphone. ' +
+    'Mute with the 🔈 button. Voice is peer-to-peer, so it needs the online room (see below) — it will not run between tabs on one machine.<br><br>' +
+    '<b style="color:var(--yellow)">How it connects.</b> Rooms are peer-to-peer over WebRTC using the public PeerJS broker for the ' +
+    'introduction — there is no InkForge server and your artwork never passes through one. Other tabs on the same computer always ' +
+    'sync, even with no internet at all. If two people are behind strict corporate firewalls WebRTC may not get through; everything ' +
+    'else in InkForge keeps working.<br><br>' +
+    '<b style="color:var(--yellow)">The password</b> stops people wandering into your room by accident. It is not encryption — do not ' +
+    'treat a room as private for anything sensitive.',
+  layers: '<b style="color:var(--yellow)">Everything lands on one layer.</b> A new page starts with <b>Layer 1</b>, and every stroke, ' +
+    'panel, balloon and image you add goes onto whichever layer is active — and stays there. The status bar always says which one ' +
+    'that is; click it to open the Layers tab.<br><br>' +
+    '<b style="color:var(--yellow)">New layers.</b> ＋ adds one above the active layer and makes it active, so your next strokes go ' +
+    'there instead. Double-click any name to rename it.<br><br>' +
+    '<b style="color:var(--yellow)">Folders.</b> 📁 makes one. There are none until you add one. Drag a layer onto a folder row to ' +
+    'drop it inside, or between rows to reorder. Hiding or locking a folder does the same to everything in it.<br><br>' +
+    '<b style="color:var(--yellow)">Per layer:</b> 👁 show/hide · 🔒 lock · 🖨 include in exports (flip it to 🚫 for rough sketches, ' +
+    'reference photos or guides you never want printed) · opacity · ⇩ merge down · 🗑 delete. A page always keeps at least one layer.<br><br>' +
+    '<b style="color:var(--yellow)">Objects.</b> The ▸ arrow on a layer lists what is on it, so you can still pick one thing out of a ' +
+    'crowded page. <b>⇄ Move selection here</b> shifts whatever is selected onto the active layer.',
   print: '<b style="color:var(--yellow)">Page units.</b> One unit = 1/96 inch. A 825 × 1275 page is exactly 8.59 × 13.28 in; at 300 dpi that exports as 2578 × 3984 px.<br><br>' +
     '<b style="color:var(--yellow)">Bleed.</b> Set bleed when you create the project (0.125 in is standard). Tick “Include bleed area” at export and push art that should run off the page past the red guide.<br><br>' +
     '<b style="color:var(--yellow)">Crop marks.</b> Adds trim marks outside the page for the printer.<br><br>' +
     '<b style="color:var(--yellow)">Grayscale.</b> Most black-and-white interiors are cheaper to print — tick Grayscale to convert on export without touching your artwork.<br><br>' +
     '<b style="color:var(--yellow)">Where to print.</b> The PDF is a plain multi-page file at exact trim size: Lulu, Blurb, IngramSpark, Amazon KDP, Mixam and any local print shop take it as is. For webcomics, export PNG pages or the webtoon strip.',
-  new: '<b style="color:var(--yellow)">2.0 — the rebuild.</b><br>' +
+  new: '<b style="color:var(--yellow)">2.1 — draw together.</b><br>' +
+    '· <b>Collaboration.</b> Open a room from the COLLAB button, share the code, and work on the same book at once — everyone’s ' +
+    'cursor is visible and named, pages, panels, lettering and images all sync live. Optional password. Peer-to-peer, no server ' +
+    'holding your art.<br>' +
+    '· <b>Text chat and voice chat</b>, each on its own toggle.<br>' +
+    '· <b>Real layers.</b> A page starts on Layer 1 and everything you make stays on the active layer. Name them, reorder them, ' +
+    'group them in folders (none by default), hide, lock, set opacity, merge down, delete — and mark a layer 🚫 so it never ' +
+    'reaches an export.<br>' +
+    '· <b>Images go straight into the book.</b> Importing places the picture on the page, selected and ready to drag or Ctrl+D, ' +
+    'and files it in Assets at the same time.<br>' +
+    '· <b>Animated GIFs play in the editor</b> — InkForge decodes the frames itself — and are held on their current frame while ' +
+    'a PNG or PDF export is written, then resume.<br>' +
+    '· <b>PDF import fixed.</b> The Import button was dead, and a CDN worker cannot start from a local file; both are sorted, ' +
+    'password-protected PDFs are handled, and failures now say what went wrong.<br>' +
+    '· <b>Print Shop Kit.</b> Title and copyright pages, trim-size presets for KDP, IngramSpark, Lulu and Mixam, and a cover-wrap ' +
+    'generator that works out the spine from your page count and paper, with back/spine/front, barcode and safe-area guides on ' +
+    'a layer that stays out of the export.<br>' +
+    '· <b>Zoom is capped</b> at 800% so you cannot get lost past the end of the page.<br><br>' +
+    '<b style="color:var(--yellow)">2.0 — the rebuild.</b><br>' +
     '· Every page is now a <b>vector object model</b> — panels, balloons, lettering, SFX, tones, fills and brush strokes are all live objects.<br>' +
     '· <b>True HD export</b> at 72–600 dpi: pages are re-rendered from the objects, not upscaled from the screen bitmap. Bleed, crop marks, grayscale, page ranges, PDF / PNG / JPG / ZIP / webtoon strip.<br>' +
     '· <b>HD PDF import</b> at up to 600 dpi with append / replace / overlay modes and trace-lock.<br>' +
@@ -5917,14 +7935,15 @@ const HELP = {
 function showHelp(tab){
   $$('#helpTabs div').forEach(d => d.classList.toggle('active', d.dataset.htab === tab));
   $('helpBody').innerHTML = HELP[tab] || '';
-  $('helpTitle').textContent = tab === 'new' ? "WHAT'S NEW" : tab === 'bubbles' ? 'SPEECH BUBBLES' : tab === 'print' ? 'PRINTING' : 'QUICK START';
+  $('helpTitle').textContent = tab === 'new' ? "WHAT'S NEW" : tab === 'bubbles' ? 'SPEECH BUBBLES'
+    : tab === 'print' ? 'PRINTING' : tab === 'together' ? 'DRAWING TOGETHER' : tab === 'layers' ? 'LAYERS' : 'QUICK START';
   showModal('mHelp');
 }
 $$('#helpTabs div').forEach(d => d.onclick = () => showHelp(d.dataset.htab));
 
 /* ------------------------------------------------------------------- boot */
 $('fPdf').onchange = e => { const f = e.target.files[0]; if (f) openPdfImport(f); e.target.value = ''; };
-$('fImg').onchange = e => { if (e.target.files.length) importImageFiles(e.target.files, 'library'); e.target.value = ''; };
+$('fImg').onchange = e => { if (e.target.files.length) importImageFiles(e.target.files, 'book'); e.target.value = ''; };
 $('fFont').onchange = e => { const f = e.target.files[0]; if (f) importFontFile(f); e.target.value = ''; };
 $('fProj').onchange = e => { const f = e.target.files[0]; if (f) openProjectFile(f); e.target.value = ''; };
 $('textOkBtn').onclick = commitTextEdit;
@@ -5944,8 +7963,9 @@ $('textInput').addEventListener('input', () => {
 });
 $('projNameInput').addEventListener('input', e => { S.P.name = e.target.value; scheduleAutosave(); });
 window.addEventListener('resize', () => { resizeCanvases(); requestRender(); });
+window.addEventListener('pagehide', () => { if (CL.on) try { sendMsg({t:'bye'}); } catch (err){} });
 window.addEventListener('beforeunload', e => {
-  if (S.P && S.P.pages.some(p => p.objects.length)){
+  if (S.P && S.P.pages.some(p => pageObjCount(p) > 0)){
     doAutosave();
     e.preventDefault();
     e.returnValue = '';
@@ -5954,6 +7974,7 @@ window.addEventListener('beforeunload', e => {
 
 function boot(){
   buildToolbar();
+  renderCollab();
   refreshOptbar();
   initDropZone();
   showTab('inspect');
@@ -5969,7 +7990,7 @@ function boot(){
     showModal('mNew');
     hideSplash();
   };
-  if (auto && auto.project && auto.project.pages.some(p => p.objects && p.objects.length)){
+  if (auto && auto.project && auto.project.pages.some(p => (p.objects && p.objects.length) || (p.layers && p.layers.some(l => (l.objects||[]).length || (l.children||[]).length)))){
     const when = new Date(auto.saved || Date.now());
     S.P = newProject();
     S.P.pages.push(newPage());
