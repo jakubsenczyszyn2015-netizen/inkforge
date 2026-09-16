@@ -72,6 +72,18 @@ the browser — and are held on their current frame while an export is written, 
 snapping with live guides, align and distribute, z-order, layers panel, full undo/redo,
 copy/paste across pages, autosave recovery.
 
+### If a friend cannot connect
+
+Rooms are peer-to-peer by default, and some networks refuse to let two browsers
+talk directly. The fix is your own **room server**: everyone dials out to it, so
+anyone who can load the page can join. It is free to deploy and takes about five
+minutes — see [`server/README.md`](server/README.md). Paste its address into
+**COLLAB → Connection → Room server**.
+
+The **Diagnosis** panel in the collab window names the failure: whether the
+broker was reached, whether the other end answered, and whether the link went
+direct, through a relay, or through your room server.
+
 ## Print shop kit
 
 Page → Print Shop Kit builds the files a printer actually asks for:

@@ -6771,6 +6771,7 @@ function sendMsg(msg, onlyTo){
   const parts = chunkify(msg);
   for (const part of parts){
     bcSend(part);            /* same-machine tabs filter on msg.to themselves */
+    wsSend(part);            /* the room server fans out; receivers filter on msg.to */
     peerSend(part, onlyTo);
   }
 }
@@ -6829,12 +6830,24 @@ async function collabStart(opts){
     CL.bc.onmessage = e => onWire(e.data, 'bc');
   } catch (err){ CL.bc = null; }
   if (opts.online !== false){
-    try {
-      await loadLib('peerjs');
-      await peerConnect(opts);
-    } catch (err){
-      chatSys('Online rooms are unavailable (' + (err.message || err) + '). Running on this computer only — other tabs on this machine can still join.');
-      CL.online = false;
+    resetDiag();
+    if (NET.server){
+      /* a room server sidesteps NAT entirely, so it is tried first and alone */
+      try {
+        await wsConnect();
+      } catch (err){
+        chatSys('The room server did not answer (' + (err.message || err) + '). Falling back to a direct connection.');
+        try { await loadLib('peerjs'); await peerConnect(opts); }
+        catch (e2){ chatSys('No online connection (' + (e2.message || e2) + '). This computer only.'); CL.online = false; }
+      }
+    } else {
+      try {
+        await loadLib('peerjs');
+        await peerConnect(opts);
+      } catch (err){
+        chatSys('Online rooms are unavailable (' + (err.message || err) + '). Running on this computer only — other tabs on this machine can still join.');
+        CL.online = false;
+      }
     }
   }
   if (CL.role === 'host'){
@@ -6863,6 +6876,65 @@ async function collabStart(opts){
   renderCollab();
   requestRender();
 }
+/* ------------------------------------------------------ room-server transport
+   Everyone dials out to one small server which forwards messages to the rest of
+   the room. No NAT traversal, no STUN, no TURN: anyone who can load the page can
+   join. The server relays and forgets — it never holds the artwork. */
+function serverURL(){
+  let u = (NET.server || '').trim();
+  if (!u) return '';
+  u = u.replace(/^http/, 'ws').replace(/\/+$/, '');
+  if (!/^wss?:\/\//.test(u)) u = 'wss://' + u;
+  return u + '/room/' + CL.room;
+}
+function wsSend(msg){
+  if (CL.ws && CL.ws.readyState === 1){
+    try { CL.ws.send(JSON.stringify(msg)); } catch (err){}
+  }
+}
+function wsConnect(){
+  return new Promise((resolve, reject) => {
+    const url = serverURL();
+    if (!url) return reject(new Error('no room server set'));
+    let settled = false;
+    const done = fn => { if (!settled){ settled = true; fn(); } };
+    let sock;
+    try { sock = new WebSocket(url); } catch (err){ return reject(err); }
+    CL.ws = sock;
+    sock.onopen = () => {
+      CL.online = true;
+      CL.wsTries = 0;
+      diagSet('broker', 'room server connected');
+      diagSet('ice', 'n/a (server)');
+      diagSet('route', 'via room server');
+      done(resolve);
+    };
+    sock.onmessage = ev => {
+      let m; try { m = JSON.parse(ev.data); } catch (err){ return; }
+      if (m && m.t === '_room'){
+        diagSet('peer', m.others > 0 ? m.others + ' already here' : 'waiting for the host');
+        if (CL.role === 'guest' && m.others === 0)
+          diagSet('err', 'Nobody is hosting “' + CL.room + '” yet. The host needs the room open first.');
+        return;
+      }
+      if (m && m.t === '_left'){ diagSet('peer', m.others + ' still here'); return; }
+      onWire(m, 'ws');
+    };
+    sock.onerror = () => {
+      diagSet('err', 'Could not reach the room server. Check the address under Connection.');
+      done(() => reject(new Error('room server unreachable')));
+    };
+    sock.onclose = () => {
+      if (!CL.on) return;
+      diagSet('broker', 'room server dropped — reconnecting…');
+      CL.wsTries = (CL.wsTries || 0) + 1;
+      if (CL.wsTries <= 6) setTimeout(() => { if (CL.on) wsConnect().catch(() => {}); }, Math.min(1000 * CL.wsTries, 6000));
+      else diagSet('err', 'Lost the room server and gave up reconnecting.');
+    };
+    setTimeout(() => done(() => reject(new Error('room server timed out'))), 10000);
+  });
+}
+
 /* ---- connection settings: STUN/TURN relays and an optional private broker ----
    Two browsers can only talk directly when both networks allow it. Plenty of home
    routers, phone networks and school/office wifi do not, and then the only way
@@ -6874,7 +6946,7 @@ const OPEN_RELAY = [
   {urls:'turn:openrelay.metered.ca:443', username:'openrelayproject', credential:'openrelayproject'},
   {urls:'turn:openrelay.metered.ca:443?transport=tcp', username:'openrelayproject', credential:'openrelayproject'}
 ];
-const NET_DEF = {relay:'open', turnUrl:'', turnUser:'', turnPass:'', brokerHost:'', brokerPort:'', brokerPath:'/'};
+const NET_DEF = {relay:'open', turnUrl:'', turnUser:'', turnPass:'', brokerHost:'', brokerPort:'', brokerPath:'/', server:''};
 let NET = Object.assign({}, NET_DEF);
 function loadNet(){
   try { NET = Object.assign({}, NET_DEF, JSON.parse(localStorage.getItem('inkforge.net') || '{}')); }
@@ -7072,6 +7144,7 @@ function collabStop(quiet){
   CL.on = false; CL.status = 'off';
   stopVoice();
   try { CL.bc && CL.bc.close(); } catch (err){}
+  try { if (CL.ws){ CL.ws.onclose = null; CL.ws.close(); CL.ws = null; } } catch (err){}
   try { CL.peer && CL.peer.destroy(); } catch (err){}
   CL.bc = null; CL.peer = null; CL.conns = {}; CL.hostConn = null;
   CL.peers = {}; CL.pool = {};
@@ -7117,6 +7190,13 @@ function handleMsg(m, via){
       sendMsg({t:'roster', peers: rosterList()});
       if (CL.voice && m.peerId) setTimeout(() => callPeer(m.peerId), 600);
       renderCollab();
+      break;
+    }
+    case 'hello2': {
+      /* somebody turned voice on later and now has a peer id to be called on */
+      const pr = CL.peers[m.from];
+      if (pr) pr.peerId = m.peerId;
+      if (CL.voice && m.peerId) setTimeout(() => callPeer(m.peerId), 400);
       break;
     }
     case 'denied':
@@ -7439,6 +7519,13 @@ function toggleChat(force){
 /* ---------------------------------------------------------------- voice */
 async function startVoice(){
   if (!CL.online){ toast('Voice needs the online room — same-machine rooms are data only', 'err'); return; }
+  if (!CL.peer){
+    /* room-server rooms carry data over the server, but audio is still browser
+       to browser, so the peer layer is only started when someone wants to talk */
+    toast('Starting voice…');
+    try { await loadLib('peerjs'); await peerConnect({}); sendMsg({t:'hello2', peerId: CL.myPeerId}); }
+    catch (err){ toast('Voice unavailable: ' + (err.message || err), 'err'); return; }
+  }
   try {
     CL.localStream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true, noiseSuppression:true, autoGainControl:true}});
   } catch (err){
@@ -7571,15 +7658,32 @@ function connectionPanel(host){
   const head = el('div', 'slbl');
   head.style.cssText = 'cursor:pointer;user-select:none';
   head.textContent = (CL.netOpen ? '▾ ' : '▸ ') + 'Connection' +
-    (NET.relay === 'off' ? ' — relay off' : NET.relay === 'custom' ? ' — your own relay' : ' — free relay');
+    (NET.server ? ' — your room server'
+      : NET.relay === 'off' ? ' — relay off'
+      : NET.relay === 'custom' ? ' — your own relay' : ' — free relay');
   head.onclick = () => { CL.netOpen = !CL.netOpen; buildCollabModal(); };
   wrap.appendChild(head);
   if (CL.netOpen){
     const note = el('div', 'note');
-    note.innerHTML = 'If a friend can never connect, this is almost always why. Some networks refuse to let two ' +
-      'browsers talk directly, and then everything has to go through a <b>TURN relay</b>.';
+    note.innerHTML = 'If a friend can never connect, this is where to fix it. The surest cure is your own ' +
+      '<b>room server</b>: everyone dials out to it, so there is nothing for a firewall to block.';
     note.style.margin = '6px 0 10px';
     wrap.appendChild(note);
+
+    wrap.appendChild(el('div', 'slbl', 'Room server'));
+    const sv = el('input', 'mi-input');
+    sv.value = NET.server || '';
+    sv.placeholder = 'inkforge-rooms.you.workers.dev';
+    sv.oninput = () => { NET.server = sv.value.trim(); saveNet(); };
+    sv.onchange = () => buildCollabModal();
+    wrap.appendChild(sv);
+    const sn = el('div', 'note');
+    sn.style.margin = '6px 0 14px';
+    sn.innerHTML = NET.server
+      ? 'Rooms go through your server. Nothing below matters unless it is unreachable.'
+      : 'Empty means browser-to-browser, which needs the relay settings below. See <b>server/README.md</b> ' +
+        'in the project to put one up for free in about five minutes.';
+    wrap.appendChild(sn);
 
     const row = el('div', 'grid3');
     [['open', 'Free relay'], ['custom', 'My own'], ['off', 'None']].forEach(([id, label]) => {
