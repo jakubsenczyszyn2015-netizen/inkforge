@@ -111,7 +111,7 @@ select:focus,.inp:focus{border-color:var(--yellow)}
   overflow:hidden;position:relative;min-height:0}
 .stage.grabbing{cursor:grabbing!important}
 #wrap{position:absolute;transform-origin:0 0;will-change:transform;filter:drop-shadow(0 14px 40px rgba(0,0,0,.75))}
-#pageCanvas{display:block;touch-action:none;background:#fff}
+#pageCanvas{display:block;position:absolute;top:0;left:0;touch-action:none;background:#fff}
 #uiCanvas{position:absolute;top:0;left:0;pointer-events:none}
 .hud{position:absolute;display:flex;align-items:center;gap:4px;background:rgba(20,20,27,.92);border:1px solid var(--b1);
   border-radius:var(--r);padding:4px 8px;font-size:10px;z-index:30;backdrop-filter:blur(8px);color:var(--text2)}
@@ -1730,9 +1730,10 @@ function ensureAssets(){
 function renderPage(c, pg, env){
   env = env || {};
   const scale = env.scale || 1, bleed = env.bleed || 0;
+  const ox = env.ox || 0, oy = env.oy || 0;
   const W = S.P.w, H = S.P.h;
   c.save();
-  c.setTransform(scale, 0, 0, scale, 0, 0);
+  c.setTransform(scale, 0, 0, scale, -ox * scale, -oy * scale);
   c.translate(bleed, bleed);
   /* paper */
   c.fillStyle = pg.bg || '#ffffff';
@@ -2480,22 +2481,67 @@ const stageEl = $('stage'), wrapEl = $('wrap');
 const hitCx = document.createElement('canvas').getContext('2d');
 let renderScale = 1;
 
+/* The canvas covers the visible part of the page, not the whole page.
+   Sizing it to the page meant that zooming in allocated a bitmap for artwork
+   nobody could see — at 800% that is tens of millions of pixels per canvas,
+   across two canvases plus the drag caches, which exhausts memory and kills
+   the tab. It also repainted all of it every frame, which is where the lag at
+   high zoom came from. A margin around the viewport keeps small pans from
+   reallocating. */
+const VIEW_PAD = 180;            /* css px of slack around the viewport */
+const MAX_CANVAS_PIXELS = 26e6;  /* ~104MB per canvas, the ceiling we never cross */
+let viewOX = 0, viewOY = 0, viewVW = 0, viewVH = 0;
+function visibleRect(){
+  const r = stageEl.getBoundingClientRect(), z = S.view.zoom;
+  const x = (-S.view.px - VIEW_PAD) / z, y = (-S.view.py - VIEW_PAD) / z;
+  const w = (r.width + VIEW_PAD * 2) / z, h = (r.height + VIEW_PAD * 2) / z;
+  const x0 = clamp(x, 0, S.P.w), y0 = clamp(y, 0, S.P.h);
+  const x1 = clamp(x + w, 0, S.P.w), y1 = clamp(y + h, 0, S.P.h);
+  return {x: x0, y: y0, w: Math.max(1, x1 - x0), h: Math.max(1, y1 - y0)};
+}
+/* true while the canvas still covers everything the stage can show */
+function viewCovered(){
+  const r = stageEl.getBoundingClientRect(), z = S.view.zoom;
+  const sx = -S.view.px / z, sy = -S.view.py / z;
+  const sw = r.width / z, sh = r.height / z;
+  const needX0 = Math.max(0, sx), needY0 = Math.max(0, sy);
+  const needX1 = Math.min(S.P.w, sx + sw), needY1 = Math.min(S.P.h, sy + sh);
+  if (needX1 <= needX0 || needY1 <= needY0) return true;
+  return viewOX <= needX0 + 0.5 && viewOY <= needY0 + 0.5 &&
+         viewOX + viewVW >= needX1 - 0.5 && viewOY + viewVH >= needY1 - 0.5;
+}
+let _inResize = false;
 function resizeCanvases(){
   const z = S.view.zoom, dpr = Math.min(2, window.devicePixelRatio || 1);
+  const v = visibleRect();
   let rs = z * dpr;
-  rs = Math.min(rs, 6000 / S.P.w, 8200 / S.P.h);
-  rs = clamp(rs, 0.2, 6);
+  rs = Math.min(rs, Math.sqrt(MAX_CANVAS_PIXELS / (v.w * v.h)));
+  rs = clamp(rs, 0.2, 8);
   renderScale = rs;
-  const pw = Math.max(1, Math.round(S.P.w * rs)), ph = Math.max(1, Math.round(S.P.h * rs));
+  viewOX = v.x; viewOY = v.y; viewVW = v.w; viewVH = v.h;
+  const pw = Math.max(1, Math.round(v.w * rs)), ph = Math.max(1, Math.round(v.h * rs));
   for (const cv of [pageCanvas, uiCanvas]){
     if (cv.width !== pw || cv.height !== ph){ cv.width = pw; cv.height = ph; }
-    cv.style.width = (S.P.w * z) + 'px';
-    cv.style.height = (S.P.h * z) + 'px';
+    cv.style.width = (v.w * z) + 'px';
+    cv.style.height = (v.h * z) + 'px';
+    cv.style.left = (v.x * z) + 'px';
+    cv.style.top = (v.y * z) + 'px';
   }
+  wrapEl.style.width = (S.P.w * z) + 'px';
+  wrapEl.style.height = (S.P.h * z) + 'px';
+  S.dragCache = null;
+  _inResize = true;
   applyView();
+  _inResize = false;
+}
+/* page-space -> canvas transform, accounting for which slice we are drawing */
+function pageTransform(c, scale){
+  c.setTransform(scale, 0, 0, scale, -viewOX * scale, -viewOY * scale);
 }
 function applyView(){
   wrapEl.style.transform = 'translate(' + Math.round(S.view.px) + 'px,' + Math.round(S.view.py) + 'px)';
+  /* panning can expose page the canvas does not cover — re-cut the slice */
+  if (!_inResize && S.P && !viewCovered()){ resizeCanvases(); requestRender(); }
 }
 const MIN_ZOOM = 0.04, MAX_ZOOM = 8;
 let _zoomWarn = 0;
@@ -2545,8 +2591,10 @@ function updateZoomUI(){
   const zd = $('zoomDisp'); if (zd) zd.textContent = Math.round(S.view.zoom * 100) + '%';
 }
 function evPage(e){
+  /* the canvas holds only the visible slice, so its top-left is (viewOX, viewOY) */
   const r = pageCanvas.getBoundingClientRect();
-  return {x: (e.clientX - r.left) / S.view.zoom, y: (e.clientY - r.top) / S.view.zoom};
+  return {x: (e.clientX - r.left) / S.view.zoom + viewOX,
+          y: (e.clientY - r.top) / S.view.zoom + viewOY};
 }
 
 /* ------------------------------------------------------------------ bounds */
@@ -2801,7 +2849,7 @@ function drawUI(){
   const c = uix;
   c.setTransform(1, 0, 0, 1, 0, 0);
   c.clearRect(0, 0, uiCanvas.width, uiCanvas.height);
-  c.setTransform(renderScale, 0, 0, renderScale, 0, 0);
+  pageTransform(c, renderScale);
   const z = S.view.zoom, px = v => v / z;
   const P = S.P;
 
@@ -2941,34 +2989,35 @@ function buildDragCache(){
   let lo = Infinity, hi = -1;
   list.forEach((o, i) => { if (sel.has(o.id)){ lo = Math.min(lo, i); hi = Math.max(hi, i); } });
   if (hi < 0) return;
-  const W = Math.max(1, Math.ceil(S.P.w * renderScale)), H = Math.max(1, Math.ceil(S.P.h * renderScale));
-  if (W * H > 36e6) return;
+  const W = pageCanvas.width, H = pageCanvas.height;
+  if (W * H > MAX_CANVAS_PIXELS) return;
   const mk = items => {
     if (!items.length) return null;
     const cv = document.createElement('canvas');
     cv.width = W; cv.height = H;
     const cx = cv.getContext('2d');
-    cx.setTransform(renderScale, 0, 0, renderScale, 0, 0);
+    pageTransform(cx, renderScale);
     for (const o of items) drawObject(cx, o, {scale: renderScale});
     return cv;
   };
-  S.dragCache = {pre: mk(list.slice(0, lo)), mid: list.slice(lo, hi+1), post: mk(list.slice(hi+1)), scale: renderScale};
+  S.dragCache = {pre: mk(list.slice(0, lo)), mid: list.slice(lo, hi+1), post: mk(list.slice(hi+1)),
+                 scale: renderScale, ox: viewOX, oy: viewOY};
 }
 function renderNow(){
   if (!S.P || !S.P.pages.length) return;
   const dc = S.dragCache;
-  if (dc && S.drag && dc.scale === renderScale){
+  if (dc && S.drag && dc.scale === renderScale && dc.ox === viewOX && dc.oy === viewOY){
     pgx.setTransform(1, 0, 0, 1, 0, 0);
     pgx.fillStyle = page().bg || '#ffffff';
     pgx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
     if (dc.pre) pgx.drawImage(dc.pre, 0, 0);
-    pgx.setTransform(renderScale, 0, 0, renderScale, 0, 0);
+    pageTransform(pgx, renderScale);
     for (const o of dc.mid) if (!o.hidden) drawObject(pgx, o, {scale: renderScale});
     if (dc.post){ pgx.setTransform(1, 0, 0, 1, 0, 0); pgx.drawImage(dc.post, 0, 0); }
     drawUI();
     return;
   }
-  renderPage(pgx, page(), {scale: renderScale});
+  renderPage(pgx, page(), {scale: renderScale, ox: viewOX, oy: viewOY});
   drawUI();
   clearTimeout(_thumbTimer);
   _thumbTimer = setTimeout(() => updateThumb(S.cur), 220);
@@ -3740,8 +3789,8 @@ function startEdit(o){
   ta.style.height = Math.max(48, Math.min(320, b.h * z * 0.8)) + 'px';
   ta.style.textAlign = o.align || 'center';
   ov.style.display = 'block';
-  ov.style.left = clamp(r.left + b.x * z, 8, window.innerWidth - 340) + 'px';
-  ov.style.top  = clamp(r.top + b.y * z, 56, window.innerHeight - 180) + 'px';
+  ov.style.left = clamp(r.left + (b.x - viewOX) * z, 8, window.innerWidth - 340) + 'px';
+  ov.style.top  = clamp(r.top + (b.y - viewOY) * z, 56, window.innerHeight - 180) + 'px';
   ta.value = o.text || '';
   setTimeout(() => { ta.focus(); ta.select(); }, 10);
   requestRender();
