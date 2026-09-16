@@ -6840,7 +6840,16 @@ async function collabStart(opts){
   if (CL.role === 'host'){
     CL.status = 'live';
     syncShadow();
-    chatSys('Room “' + CL.roomLabel + '” is open. Share the code and start drawing.');
+    if (CL.renamed){
+      /* the old code is still held by a closed tab, so the room had to take a new
+         one — guests given the old code would wait forever without being told */
+      toast('That room name was taken — your code is now ' + CL.room, 'err');
+      chatSys('The name was still held by an earlier session, so this room is “' + CL.room +
+              '”. Share that code, not the old one.');
+      CL.renamed = false;
+    } else {
+      chatSys('Room “' + CL.roomLabel + '” is open. Share the code and start drawing.');
+    }
   } else {
     sendMsg({t:'hello', name: CL.me.name, color: CL.me.color, peerId: CL.myPeerId || '', pass: CL.passHash});
     chatSys('Knocking on “' + CL.roomLabel + '”…');
@@ -6911,8 +6920,20 @@ function diagSet(k, v){
 }
 /* Ask the live connection which candidate pair won. "relay" means TURN carried it;
    "host"/"srflx" mean the browsers reached each other directly. */
+/* PeerJS fills in .peerConnection a moment after the connection object exists,
+   so wait for it rather than giving up — a join that fails never fires 'open',
+   and that is precisely when the ICE state is worth seeing. */
+function watchConn(conn){
+  if (!conn) return;
+  let tries = 0;
+  const grab = setInterval(() => {
+    if (!CL.on || ++tries > 40){ clearInterval(grab); return; }
+    if (conn.peerConnection){ clearInterval(grab); watchIce(conn.peerConnection); }
+  }, 150);
+}
 function watchIce(pc){
   if (!pc) return;
+  diagSet('ice', pc.iceConnectionState || 'new');
   try {
     pc.addEventListener('iceconnectionstatechange', () => {
       diagSet('ice', pc.iceConnectionState);
@@ -6953,23 +6974,12 @@ function peerConnect(opts){
       CL.myPeerId = id;
       CL.online = true;
       diagSet('broker', 'connected');
-      if (CL.role === 'guest'){
-        const conn = peer.connect('inkforge-' + CL.room, {reliable:true, metadata:{name:CL.me.name}});
-        CL.hostConn = conn;
-        conn.on('open', () => {
-          diagSet('peer', 'found the host');
-          watchIce(conn.peerConnection);
-          sendMsg({t:'hello', name:CL.me.name, color:CL.me.color, peerId:id, pass:CL.passHash});
-        });
-        conn.on('data', d => onWire(d, 'peer'));
-        conn.on('close', () => { if (CL.on){ chatSys('Disconnected from the host.'); CL.status = 'lost'; renderCollab(); } });
-        conn.on('error', () => {});
-      }
+      if (CL.role === 'guest') dialHost(peer, id, 1);
       done(resolve);
     });
     peer.on('connection', conn => {
       diagSet('peer', 'a guest arrived');
-      conn.on('open', () => watchIce(conn.peerConnection));
+      watchConn(conn);
       conn.on('data', d => {
         if (d && d.t === 'hello') CL.conns[d.from] = conn;
         onWire(d, 'peer');
@@ -6989,6 +6999,7 @@ function peerConnect(opts){
         /* someone already runs a room with this name — take a suffixed code */
         CL.room = CL.room + '-' + Math.random().toString(36).slice(2, 5);
         CL.roomLabel = CL.roomLabel + ' (' + CL.room.split('-').pop() + ')';
+        CL.renamed = true;
         try { peer.destroy(); } catch (e){}
         try { CL.bc.close(); } catch (e){}
         try { CL.bc = new BroadcastChannel('inkforge-' + CL.room); CL.bc.onmessage = e => onWire(e.data, 'bc'); } catch (e){}
@@ -6996,8 +7007,14 @@ function peerConnect(opts){
         return;
       }
       if (t === 'peer-unavailable'){
-        chatSys('No room with that code is online right now.');
-        CL.status = 'lost'; renderCollab();
+        /* dialHost retries on its own timer; only report once it has given up */
+        diagSet('peer', 'no room with that code');
+        if (CL.status !== 'live'){
+          diagSet('err', 'Nobody is hosting “' + CL.room + '” right now. Check the code is exactly ' +
+            'what the host sees, and that they still have InkForge open.');
+          chatSys('No room with that code is online right now.');
+          CL.status = 'lost'; renderCollab();
+        }
         return;
       }
       diagSet('err', (err && err.message) || t || 'connection failed');
@@ -7008,6 +7025,46 @@ function peerConnect(opts){
       done(() => reject(new Error('timed out reaching the signalling server')));
     }, 12000);
   });
+}
+/* Reaching a room can fail on the first try for reasons that cure themselves:
+   the host may still be registering, or the broker may still be holding the ID
+   of a tab that was closed moments ago. So dial again rather than hang. */
+const DIAL_TRIES = 4;
+function dialHost(peer, myId, attempt){
+  if (!CL.on || CL.role !== 'guest') return;
+  diagSet('peer', attempt > 1 ? 'trying again (' + attempt + ' of ' + DIAL_TRIES + ')…' : 'calling the room…');
+  let opened = false;
+  const conn = peer.connect('inkforge-' + CL.room, {reliable:true, metadata:{name:CL.me.name}});
+  CL.hostConn = conn;
+  watchConn(conn);
+  conn.on('open', () => {
+    opened = true;
+    diagSet('peer', 'found the host');
+    diagSet('err', '');
+    sendMsg({t:'hello', name:CL.me.name, color:CL.me.color, peerId:myId, pass:CL.passHash});
+  });
+  conn.on('data', d => onWire(d, 'peer'));
+  conn.on('close', () => {
+    if (!CL.on) return;
+    if (opened){ chatSys('Disconnected from the host.'); CL.status = 'lost'; renderCollab(); }
+  });
+  conn.on('error', () => {});
+  setTimeout(() => {
+    if (!CL.on || opened || CL.status === 'live' || CL.status === 'denied') return;
+    try { conn.close(); } catch (err){}
+    if (attempt < DIAL_TRIES){
+      dialHost(peer, myId, attempt + 1);
+    } else {
+      diagSet('peer', 'no answer');
+      diagSet('err', 'The room answered the broker but never completed the connection. ' +
+        'Either the host closed InkForge and the code is still reserved — have them reopen the ' +
+        'room and use the fresh code — or both networks blocked the link, in which case turn a ' +
+        'relay on under Connection.');
+      CL.status = 'lost';
+      chatSys('Could not reach that room after ' + DIAL_TRIES + ' tries.');
+      renderCollab();
+    }
+  }, 7000);
 }
 function collabStop(quiet){
   if (!CL.on) return;
