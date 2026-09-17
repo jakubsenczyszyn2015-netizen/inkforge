@@ -2517,6 +2517,11 @@ function resizeCanvases(){
   let rs = z * dpr;
   rs = Math.min(rs, Math.sqrt(MAX_CANVAS_PIXELS / (v.w * v.h)));
   rs = clamp(rs, 0.2, 8);
+  /* A slice that moves without changing size keeps its old bitmap: the canvas is
+     only cleared when width/height are assigned. Left to the next animation
+     frame, the previous image shows at the new offset — artwork appearing to
+     stamp itself across the page. Note the move and repaint synchronously. */
+  const moved = (viewOX !== v.x || viewOY !== v.y || renderScale !== rs);
   renderScale = rs;
   viewOX = v.x; viewOY = v.y; viewVW = v.w; viewVH = v.h;
   const pw = Math.max(1, Math.round(v.w * rs)), ph = Math.max(1, Math.round(v.h * rs));
@@ -2533,6 +2538,7 @@ function resizeCanvases(){
   _inResize = true;
   applyView();
   _inResize = false;
+  if (moved && !_rendering && S.P && S.P.pages && S.P.pages.length) renderNow();
 }
 /* page-space -> canvas transform, accounting for which slice we are drawing */
 function pageTransform(c, scale){
@@ -3003,8 +3009,14 @@ function buildDragCache(){
   S.dragCache = {pre: mk(list.slice(0, lo)), mid: list.slice(lo, hi+1), post: mk(list.slice(hi+1)),
                  scale: renderScale, ox: viewOX, oy: viewOY};
 }
+let _rendering = false;
 function renderNow(){
   if (!S.P || !S.P.pages.length) return;
+  if (_rendering) return;
+  _rendering = true;
+  try { renderFrame(); } finally { _rendering = false; }
+}
+function renderFrame(){
   const dc = S.dragCache;
   if (dc && S.drag && dc.scale === renderScale && dc.ox === viewOX && dc.oy === viewOY){
     pgx.setTransform(1, 0, 0, 1, 0, 0);
